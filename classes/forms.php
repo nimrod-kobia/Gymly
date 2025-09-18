@@ -50,6 +50,15 @@ class Forms{
     }
     public function signIn(){
         ob_start();
+?>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="logo-container">
+            <img src="assets/images/logo.png" alt="Logo" class="logo">
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Please enter your details</p>
+        </div>
+        
         return ob_get_clean();
     }
     private function submitButton($value, $name,$class = 'btn-primary'){
