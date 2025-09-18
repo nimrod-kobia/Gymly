@@ -58,7 +58,34 @@ class Forms{
             <h1 class="auth-title">Welcome Back</h1>
             <p class="auth-subtitle">Please enter your details</p>
         </div>
-        
+
+        <button class="btn btn-google w-100 mb-3">
+            <i class="bi bi-google me-2"></i>Sign in with Google 
+        </button>
+
+        <div class="divider"><span class="divider-text">or</span></div>
+
+        <form action=<!-- input link for signin page--> method="post">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class=" form-check">
+                <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                <label class="form-check-label" for="remember">Remember for 30 days</label>
+            </div>
+            <a href="#" class="forgot-link">Forgot password?</a>
+    </div>
+    </form>
+    </div>
+        </div>
+
         return ob_get_clean();
     }
     private function submitButton($value, $name,$class = 'btn-primary'){
