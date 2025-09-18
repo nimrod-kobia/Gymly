@@ -10,6 +10,17 @@ class Forms{
             <h1 class="auth-title">Gymly</h1>
             <p class="auth-subtitle">Start your fitness journey today</p>
         </div>
+
+        <?php if(isset($_GET['error'])):?>
+            <div class="alert alert-danger"><?php echohtmlspecialchars($_GET['error']); ?></div>
+        <?php endif; ?>
+        
+        <?php if(isset($_GET['success'])):?>
+            <div class="alert alert-success">
+                <strong>Success</strong>Your account has been created. Please check your email.
+            </div>
+        <?php endif; ?>
+
         <form action="classes\SignupController.php" method="post">
             <div class="mb-3">
                 <label for="fullname" class="form-label">Full Name</label>
