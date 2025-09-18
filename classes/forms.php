@@ -6,7 +6,7 @@ class Forms {
 <div class="auth-container">
     <div class="auth-card">
         <div class="logo-container">
-            <img src="assets/images/logo.png" alt="Logo" class="logo">
+            <img src="assets\images\logo.png" alt="Logo" class="logo">
             <h1 class="auth-title">Gymly</h1>
             <p class="auth-subtitle">Start your fitness journey today</p>
         </div>
@@ -59,7 +59,7 @@ class Forms {
 <div class="auth-container">
     <div class="auth-card">
         <div class="logo-container">
-            <img src="assets/images/logo.png" alt="Logo" class="logo">
+            <img src="assets\images\logo.png" alt="Logo" class="logo">
             <h1 class="auth-title">Welcome Back</h1>
             <p class="auth-subtitle">Please enter your details</p>
         </div>
