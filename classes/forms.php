@@ -11,8 +11,17 @@ class Forms {
             <p class="auth-subtitle">Start your fitness journey today</p>
         </div>
 
-        <?php if (isset($_GET['error'])): ?>
-            <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['error']); ?></div>
+        <?php if (isset($_GET['error']) && !empty($_GET['error'])): ?>
+            <div class="alert alert-danger">
+                <?php 
+                $errors = explode("|", $_GET['error']);
+                foreach ($errors as $error) {
+                    if (!empty($error)) {
+                        echo htmlspecialchars($error) . "<br>";
+                    }
+                }
+                ?>
+            </div>
         <?php endif; ?>
 
         <?php if (isset($_GET['success'])): ?>
@@ -21,7 +30,7 @@ class Forms {
             </div>
         <?php endif; ?>
 
-        <form action="classes/SignupController.php" method="post">
+        <form action="../handlers/signupHandler.php" method="post">
             <div class="mb-3">
                 <label for="fullname" class="form-label">Full Name</label>
                 <input type="text" class="form-control" id="fullname" name="fullname" required>
