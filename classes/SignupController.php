@@ -1,5 +1,5 @@
 <?php
-    class signUpController{
+    class SignUpController{
         private $fullname;
         private $username;
         private $email;
@@ -68,5 +68,57 @@
                 $this->errors['cpassword'] = "Passwords do not match.";
             }
         }
+        public function checkUserExists() {
+        try {
+            $database = new Database();
+            $pdo = $database->connect();
+            
+            if ($pdo) {
+                // Check if email exists
+                $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
+                $stmt->execute([':email' => $this->email]);
+                if ($stmt->fetch()) {
+                    $this->errors['email'] = "Email already exists.";
+                }
 
+                // Check if username exists
+                $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username");
+                $stmt->execute([':username' => $this->username]);
+                if ($stmt->fetch()) {
+                    $this->errors['username'] = "Username already exists.";
+                }
+            }
+        } catch (PDOException $e) {
+            error_log("Database error in checkUserExists: " . $e->getMessage());
+            $this->errors['database'] = "System error. Please try again later.";
+        }
+    }
+
+    public function createUser() {
+        try {
+            $database = new Database();
+            $pdo = $database->connect();
+            
+            if ($pdo) {
+                $hashedPassword = password_hash($this->password, PASSWORD_DEFAULT);
+                
+                $stmt = $pdo->prepare("INSERT INTO users (full_name, username, email, password_hash) 
+                                      VALUES (:full_name, :username, :email, :password_hash)");
+                
+                $result = $stmt->execute([
+                    ':full_name' => $this->fullname,
+                    ':username' => $this->username,
+                    ':email' => $this->email,
+                    ':password_hash' => $hashedPassword
+                ]);
+                
+                return $result;
+            }
+            return false;
+        } catch (PDOException $e) {
+            error_log("Database error in createUser: " . $e->getMessage());
+            $this->errors['database'] = "System error. Please try again later.";
+            return false;
+        }
+    }
     }
