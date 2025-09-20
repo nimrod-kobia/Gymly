@@ -20,7 +20,7 @@ spl_autoload_register(function ($className) {
 });
 
 // Load Composer autoloader for PHPMailer (if it exists)
-$composerAutoloader = __DIR__ . '/plugins/PHPMailer/vendor/autoload.php';
+$composerAutoloader = __DIR__ . '/vendor/autoload.php';
 if (file_exists($composerAutoloader)) {
     require_once $composerAutoloader;
 }
