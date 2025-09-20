@@ -14,5 +14,15 @@
             $this->password = $password;
             $this->cpassword = $cpassword;
         }
+        // Getters
+        public function getFullname(){
+            return $this->fullname;
+        }
+        public function getUsername(){
+            return $this->username;
+        }
+        public function getEmail(){
+            return $this->email;
+        }
 
     }
