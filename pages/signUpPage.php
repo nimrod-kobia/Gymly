@@ -1,5 +1,5 @@
 <?php
 require_once "../autoload.php";
 $form = new Forms();
-$forms->signUp();
+echo $form->signUp(); // Changed from $forms->signUp() to $form->signUp()
 ?>
