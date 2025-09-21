@@ -1,11 +1,7 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 require_once "../autoload.php";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signIn"])) {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["signIn"])) {
     $usernameOrEmail = $_POST["usernameOrEmail"];
     $password = $_POST["password"];
 
@@ -13,20 +9,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signIn"])) {
 
     if ($signin->validateInputs()) {
         if ($signin->authenticateUser()) {
-            // success → start session & redirect
+            $user = $signin->getUserData();
+
             session_start();
-            $_SESSION['user'] = $signin->getUserData();
-            header("Location: ../pages/dashboard.php");
+            $_SESSION["user_id"] = $user["id"];
+            $_SESSION["username"] = $user["username"];
+
+            header("Location: ../pages/dashboard.php?success=1");
             exit();
         } else {
             $errors = $signin->getErrors();
-            $errorString = !empty($errors) ? implode("|", array_values($errors)) : "Login failed. Please try again.";
+            $errorString = implode("|", $errors);
             header("Location: ../pages/signInPage.php?error=" . urlencode($errorString));
             exit();
         }
     } else {
         $errors = $signin->getErrors();
-        $errorString = !empty($errors) ? implode("|", array_values($errors)) : "Validation failed.";
+        $errorString = implode("|", $errors);
         header("Location: ../pages/signInPage.php?error=" . urlencode($errorString));
         exit();
     }

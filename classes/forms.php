@@ -79,40 +79,42 @@ class Forms {
     }
 
     // Signin form
-    public function signIn() {
-        ob_start();
-?>
-<div class="auth-container">
-    <div class="auth-card">
-        <?= $this->headerSection("Welcome Back", "Please enter your details"); ?>
-        <?= $this->alertMessages(); ?>
+   public function signIn(): string {
+    ob_start();
+    ?>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Sign In</h1>
+            <p class="auth-subtitle">Welcome back! Please enter your credentials.</p>
 
-        <form action="../handlers/signInHandler.php" method="post">
-            <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" name="email" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="remember" name="remember">
-                    <label class="form-check-label" for="remember">Remember for 30 days</label>
+            <?php if (isset($_GET['error'])): ?>
+                <div class="alert alert-danger">
+                    <?= htmlspecialchars($_GET['error']); ?>
                 </div>
-                <a href="#" class="forgot-link">Forgot password?</a>
-            </div>
+            <?php endif; ?>
 
-            <div class="d-grid gap-2">
-                <?= $this->submitButton("Sign In", "signIn"); ?>
-            </div>
-        </form>
+            <form method="POST" action="../handlers/signInHandler.php">
+                <div class="form-group mb-3">
+                    <label for="usernameOrEmail">Username or Email</label>
+                    <input type="text" name="usernameOrEmail" id="usernameOrEmail" class="form-control" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" class="form-control" required>
+                </div>
+
+                <button type="submit" name="signIn" class="btn btn-primary w-100">Sign In</button>
+            </form>
+
+            <p class="auth-footer">
+                Don’t have an account? <a href="signUpPage.php">Sign up</a>
+            </p>
+        </div>
     </div>
-</div>
-<?php
-        return ob_get_clean();
-    }
+    <?php
+    return ob_get_clean();
+}
+
 }
 ?>
