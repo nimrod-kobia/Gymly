@@ -3,9 +3,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Include autoloader to handle class loading
-// This will automatically load the SignupController class and any other classes needed
 require_once "../autoload.php";
+use Services\MailService;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signUp"])) {
     $fullname = $_POST["fullname"];
@@ -14,18 +13,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signUp"])) {
     $password = $_POST["password"];
     $cpassword = $_POST["cpassword"];
 
-    // Create signup controller (autoloader will handle the class loading)
     $signup = new signupcontroller($fullname, $username, $email, $password, $cpassword);
-    
-    // Validate inputs
+
     if ($signup->validateInputs()) {
-        // Check if user already exists
         $signup->checkUserExists();
         $errors = $signup->getErrors();
-        
+
         if (empty($errors)) {
             if ($signup->createUser()) {
-                header("Location: ../pages/signUpPage.php?success=1");
+                session_start();
+                $verificationCode = rand(100000, 999999);
+                $_SESSION['verification_code'] = $verificationCode;
+                $_SESSION['user_email'] = $email;
+
+                $mailer = new MailService();
+                $mailer->sendVerification($email, $verificationCode);
+
+                header("Location: ../pages/verify.php");
                 exit();
             } else {
                 $errors = $signup->getErrors();
@@ -48,4 +52,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signUp"])) {
     header("Location: ../pages/signUpPage.php?error=Invalid+request");
     exit();
 }
-?>
