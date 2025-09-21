@@ -1,6 +1,17 @@
 {
+    "name": "ryan/gymly",
+    "authors": [
+        {
+            "name": "Ryan",
+            "email": "ryankagua@gmail.com"
+        }
+    ],
     "require": {
-        "vlucas/phpdotenv": "^5.6",
         "phpmailer/phpmailer": "^6.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Services\\": "Services/"
+        }
     }
 }
