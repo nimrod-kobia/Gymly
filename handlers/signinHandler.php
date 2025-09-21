@@ -1,24 +1,36 @@
 <?php
-class SignInHandler {
-    private PDO $pdo;
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-    public function __construct() {
-        try {
-            $this->pdo = new PDO("mysql:host=localhost;dbname=gymly", "root", "");
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            die("DB Connection failed: " . $e->getMessage());
+require_once "../autoload.php";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signIn"])) {
+    $usernameOrEmail = $_POST["usernameOrEmail"];
+    $password = $_POST["password"];
+
+    $signin = new SignInController($usernameOrEmail, $password);
+
+    if ($signin->validateInputs()) {
+        if ($signin->authenticateUser()) {
+            // success → start session & redirect
+            session_start();
+            $_SESSION['user'] = $signin->getUserData();
+            header("Location: ../pages/dashboard.php");
+            exit();
+        } else {
+            $errors = $signin->getErrors();
+            $errorString = !empty($errors) ? implode("|", array_values($errors)) : "Login failed. Please try again.";
+            header("Location: ../pages/signInPage.php?error=" . urlencode($errorString));
+            exit();
         }
+    } else {
+        $errors = $signin->getErrors();
+        $errorString = !empty($errors) ? implode("|", array_values($errors)) : "Validation failed.";
+        header("Location: ../pages/signInPage.php?error=" . urlencode($errorString));
+        exit();
     }
-
-    public function authenticate(string $email, string $password): bool {
-        $stmt = $this->pdo->prepare("SELECT password FROM users WHERE email = :email LIMIT 1");
-        $stmt->execute(['email' => $email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($user && password_verify($password, $user['password'])) {
-            return true;
-        }
-        return false;
-    }
+} else {
+    header("Location: ../pages/signInPage.php?error=Invalid+request");
+    exit();
 }
