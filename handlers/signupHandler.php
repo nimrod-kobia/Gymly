@@ -3,13 +3,15 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+session_start(); 
+
 require_once "../autoload.php";
 use Services\MailService;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signUp"])) {
-    $fullname = $_POST["fullname"];
-    $username = $_POST["username"];
-    $email = $_POST["email"];
+    $fullname = trim($_POST["fullname"]);
+    $username = trim($_POST["username"]);
+    $email    = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
     $password = $_POST["password"];
     $cpassword = $_POST["cpassword"];
 
@@ -21,9 +23,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signUp"])) {
 
         if (empty($errors)) {
             if ($signup->createUser()) {
-                session_start();
                 $verificationCode = rand(100000, 999999);
-                $_SESSION['verification_code'] = $verificationCode;
+                $_SESSION['verification_code'] = (string)$verificationCode;
                 $_SESSION['user_email'] = $email;
 
                 $mailer = new MailService();
@@ -33,18 +34,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signUp"])) {
                 exit();
             } else {
                 $errors = $signup->getErrors();
-                $errorString = !empty($errors) ? implode("|", array_values($errors)) : "Registration failed. Please try again.";
+                $errorString = !empty($errors) ? implode("|", $errors) : "Registration failed. Please try again.";
                 header("Location: ../pages/signUpPage.php?error=" . urlencode($errorString));
                 exit();
             }
         } else {
-            $errorString = implode("|", array_values($errors));
+            $errorString = implode("|", $errors);
             header("Location: ../pages/signUpPage.php?error=" . urlencode($errorString));
             exit();
         }
     } else {
         $errors = $signup->getErrors();
-        $errorString = !empty($errors) ? implode("|", array_values($errors)) : "Validation failed";
+        $errorString = !empty($errors) ? implode("|", $errors) : "Validation failed";
         header("Location: ../pages/signUpPage.php?error=" . urlencode($errorString));
         exit();
     }
