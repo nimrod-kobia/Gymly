@@ -226,7 +226,6 @@
 </head>
 <body>
     <main>
-        <?php echo $content; ?>
     </main>
 
     <!-- Bootstrap JS -->

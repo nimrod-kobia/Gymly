@@ -88,6 +88,8 @@ class Forms {
         ?>
         <div class="auth-container">
             <div class="auth-card">
+                <div class="logo-container">
+                    <img src="../assets/images/logo.png" alt="Gymly" class="logo">
                 <h1 class="auth-title">Sign In</h1>
                 <p class="auth-subtitle">Welcome back! Please enter your credentials.</p>
 
