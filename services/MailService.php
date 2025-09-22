@@ -16,7 +16,7 @@ class MailService {
         $this->mailer->Password = 'xymx fdws azbh aoxd';
         $this->mailer->SMTPSecure = 'tls';
         $this->mailer->Port = 587;
-        $this->mailer->setFrom('your_email@gmail.com', 'Gymly');
+        $this->mailer->setFrom('gymly2b@gmail.com', 'Gymly');
     }
 
     public function sendVerification($to, $code) {
