@@ -10,7 +10,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['verify'])) {
 
     if ($verify->validateInputs() && $verify->checkCode()) {
         if ($verify->markVerified()) {
-            header("Location: ../pages/signInPage.php?success=" . urlencode("Account verified successfully! You can now sign in."));
+            // Redirect to home page after successful verification
+            $_SESSION['username'] = $username; // optional, for display on home page
+            header("Location: ../pages/home.php");
             exit();
         } else {
             $errors = $verify->getErrors();
@@ -26,4 +28,3 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['verify'])) {
     header("Location: ../pages/verify.php?error=Invalid+request");
     exit();
 }
-?>
