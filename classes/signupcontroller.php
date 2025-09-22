@@ -1,124 +1,78 @@
 <?php
-    class SignUpController{
-        private $fullname;
-        private $username;
-        private $email;
-        private $password;
-        private $cpassword;
-        private $errors=[];
+class SignupController {
+    private string $fullname;
+    private string $username;
+    private string $email;
+    private string $password;
+    private string $cpassword;
+    private array $errors = [];
+    private ?PDO $pdo = null;
 
+    public function __construct(string $fullname, string $username, string $email, string $password, string $cpassword) {
+        $this->fullname = trim($fullname);
+        $this->username = trim($username);
+        $this->email = trim($email);
+        $this->password = $password;
+        $this->cpassword = $cpassword;
+        $this->pdo = (new Database())->connect();
+    }
 
-        public function __construct($fullname, $username, $email, $password, $cpassword){
-            $this->fullname = trim($fullname);
-            $this->username = trim($username);
-            $this->email = trim($email);
-            $this->password = $password;
-            $this->cpassword = $cpassword;
-        }
-        // Getters
-        public function getFullname(){
-            return $this->fullname;
-        }
-        public function getUsername(){
-            return $this->username;
-        }
-        public function getEmail(){
-            return $this->email;
-        }
-        public function getErrors(){
-            return $this->errors;
-        }
-        //validation methods
-        public function validateInputs(){
-            $this->validateFullname();
-            $this->validateUsername();
-            $this->validateEmail();
-            $this->validatePassword();
-            return empty($this->errors);
-        }
-        private function validateFullname(){
-            if(empty($this->fullname)){
-                $this->errors['fullname'] = "Full name is required.";
-            } elseif(strlen( $this->fullname)<2){
-                $this->errors['fullname'] = "Full name must contain at least 2 characters.";
-            }
-        }
-        private function validateUsername(){
-            if(empty($this->username)){
-                $this->errors['username'] = "Username is required.";
-            } elseif(strlen( $this->username)<3){
-                $this->errors['username'] = "Username can only contain at least 3 characters.";
-            } elseif(!preg_match('/^[a-zA-Z0-9_]+$/', $this->username)){
-                $this->errors['username'] = "Username can only contain letters, numbers, and underscores.";
-            }
-        }
-        private function validateEmail(){
-            if(empty($this->email)){
-                $this->errors['email'] = "Email is required.";
-            } elseif(!filter_var($this->email, FILTER_VALIDATE_EMAIL)){
-                $this->errors['email'] = "Invalid email format.";
-            }
-        }
-        private function validatePassword(){
-            if(empty($this->password)){
-                $this->errors['password'] = "Password is required.";
-            } elseif(strlen($this->password)<8){
-                $this->errors['password'] = "Password must be at least 8 characters long.";
-            } elseif($this->password !== $this->cpassword){
-                $this->errors['cpassword'] = "Passwords do not match.";
-            }
-        }
-        public function checkUserExists() {
+    // Validate user inputs
+    public function validateInputs(): bool {
+        if (empty($this->fullname)) $this->errors['fullname'] = "Full name is required.";
+        if (empty($this->username)) $this->errors['username'] = "Username is required.";
+        if (empty($this->email) || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) $this->errors['email'] = "Valid email is required.";
+        if (empty($this->password)) $this->errors['password'] = "Password is required.";
+        if ($this->password !== $this->cpassword) $this->errors['cpassword'] = "Passwords do not match.";
+        return empty($this->errors);
+    }
+
+    // Check if username or email already exists
+    public function checkUserExists(): void {
         try {
-            $database = new Database();
-            $pdo = $database->connect();
-            
-            if ($pdo) {
-                // Check if email exists
-                $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
-                $stmt->execute([':email' => $this->email]);
-                if ($stmt->fetch()) {
-                    $this->errors['email'] = "Email already exists.";
-                }
-
-                // Check if username exists
-                $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username");
-                $stmt->execute([':username' => $this->username]);
-                if ($stmt->fetch()) {
-                    $this->errors['username'] = "Username already exists.";
-                }
+            $stmt = $this->pdo->prepare("SELECT id FROM users WHERE username = :username OR email = :email LIMIT 1");
+            $stmt->execute([
+                ':username' => $this->username,
+                ':email' => $this->email
+            ]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($user) {
+                if ($user['username'] === $this->username) $this->errors['username'] = "Username already taken.";
+                if ($user['email'] === $this->email) $this->errors['email'] = "Email already registered.";
             }
         } catch (PDOException $e) {
-            error_log("Database error in checkUserExists: " . $e->getMessage());
-            $this->errors['database'] = "System error. Please try again later.";
+            $this->errors['database'] = "Database error: " . $e->getMessage();
         }
     }
 
-    public function createUser() {
+    // Create new user and return user ID
+    public function createUser(): ?int {
         try {
-            $database = new Database();
-            $pdo = $database->connect();
-            
-            if ($pdo) {
-                $hashedPassword = password_hash($this->password, PASSWORD_DEFAULT);
-                
-                $stmt = $pdo->prepare("INSERT INTO users (full_name, username, email, password_hash) 
-                                      VALUES (:full_name, :username, :email, :password_hash)");
-                
-                $result = $stmt->execute([
-                    ':full_name' => $this->fullname,
-                    ':username' => $this->username,
-                    ':email' => $this->email,
-                    ':password_hash' => $hashedPassword
-                ]);
-                
-                return $result;
-            }
-            return false;
+            $passwordHash = password_hash($this->password, PASSWORD_DEFAULT);
+
+            $stmt = $this->pdo->prepare("
+                INSERT INTO users (full_name, username, email, password_hash, created_at, updated_at)
+                VALUES (:fullname, :username, :email, :password_hash, NOW(), NOW())
+                RETURNING id
+            ");
+            $stmt->execute([
+                ':fullname' => $this->fullname,
+                ':username' => $this->username,
+                ':email' => $this->email,
+                ':password_hash' => $passwordHash
+            ]);
+
+            // Return newly created user ID
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ? (int)$result['id'] : null;
         } catch (PDOException $e) {
-            error_log("Database error in createUser: " . $e->getMessage());
-            $this->errors['database'] = "System error. Please try again later.";
-            return false;
+            $this->errors['database'] = "Failed to create user: " . $e->getMessage();
+            return null;
         }
     }
+
+    public function getErrors(): array {
+        return $this->errors;
     }
+}
+?>

@@ -1,23 +1,29 @@
 <?php
+session_start();
 require_once "../autoload.php";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
-    session_start();
-    $inputCode = $_POST['code'] ?? '';
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['verify'])) {
+    $username = $_POST['username'] ?? '';
+    $code = $_POST['code'] ?? '';
 
-    $verify = new VerifyController($inputCode);
+    $verify = new VerifyController($username, $code);
 
-    if ($verify->validateCode() && $verify->checkCode()) {
-        $_SESSION['verified'] = true;
-        header("Location: ../pages/dashboard.php?verified=1");
-        exit();
+    if ($verify->validateInputs() && $verify->checkCode()) {
+        if ($verify->markVerified()) {
+            header("Location: ../pages/signInPage.php?success=" . urlencode("Account verified successfully! You can now sign in."));
+            exit();
+        } else {
+            $errors = $verify->getErrors();
+            header("Location: ../pages/verify.php?error=" . urlencode(implode("|", $errors)));
+            exit();
+        }
     } else {
         $errors = $verify->getErrors();
-        $errorString = implode("|", $errors);
-        header("Location: ../pages/verifyPage.php?error=" . urlencode($errorString));
+        header("Location: ../pages/verify.php?error=" . urlencode(implode("|", $errors)));
         exit();
     }
 } else {
-    header("Location: ../pages/verifyPage.php?error=Invalid+request");
+    header("Location: ../pages/verify.php?error=Invalid+request");
     exit();
 }
+?>

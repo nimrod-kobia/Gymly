@@ -1,55 +1,63 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-session_start(); 
-
+session_start();
 require_once "../autoload.php";
 use Services\MailService;
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["signUp"])) {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["signUp"])) {
     $fullname = trim($_POST["fullname"]);
     $username = trim($_POST["username"]);
     $email    = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
     $password = $_POST["password"];
     $cpassword = $_POST["cpassword"];
 
-    $signup = new signupcontroller($fullname, $username, $email, $password, $cpassword);
+    $signup = new SignupController($fullname, $username, $email, $password, $cpassword);
 
     if ($signup->validateInputs()) {
         $signup->checkUserExists();
         $errors = $signup->getErrors();
 
         if (empty($errors)) {
-            if ($signup->createUser()) {
-                $verificationCode = rand(100000, 999999);
-                $_SESSION['verification_code'] = (string)$verificationCode;
-                $_SESSION['user_email'] = $email;
+            $userId = $signup->createUser(); // must return new user ID
+            if ($userId) {
+                // Generate 6-digit verification code
+                $verificationCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+                $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
+                // Save code & expiry directly in users table
+                $database = new Database();
+                $pdo = $database->connect();
+                $stmt = $pdo->prepare("
+                    UPDATE users
+                    SET verification_code = :code,
+                        code_expiry = :expires_at,
+                        is_verified = FALSE
+                    WHERE id = :id
+                ");
+                $stmt->execute([
+                    ':code' => $verificationCode,
+                    ':expires_at' => $expiresAt,
+                    ':id' => $userId
+                ]);
+
+                // Send verification email
                 $mailer = new MailService();
-                $mailer->sendVerification($email, $verificationCode);
+                $mailer->sendVerification($email, $username, $verificationCode);
 
+                $_SESSION['user_id'] = $userId;
                 header("Location: ../pages/verify.php");
-                exit();
-            } else {
-                $errors = $signup->getErrors();
-                $errorString = !empty($errors) ? implode("|", $errors) : "Registration failed. Please try again.";
-                header("Location: ../pages/signUpPage.php?error=" . urlencode($errorString));
                 exit();
             }
         } else {
-            $errorString = implode("|", $errors);
-            header("Location: ../pages/signUpPage.php?error=" . urlencode($errorString));
+            header("Location: ../pages/signUpPage.php?error=" . urlencode(implode("|", $errors)));
             exit();
         }
     } else {
         $errors = $signup->getErrors();
-        $errorString = !empty($errors) ? implode("|", $errors) : "Validation failed";
-        header("Location: ../pages/signUpPage.php?error=" . urlencode($errorString));
+        header("Location: ../pages/signUpPage.php?error=" . urlencode(implode("|", $errors)));
         exit();
     }
 } else {
     header("Location: ../pages/signUpPage.php?error=Invalid+request");
     exit();
 }
+?>
