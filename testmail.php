@@ -8,7 +8,7 @@ $testEmail = "ryankagua@gmail.com";
 $verificationCode = rand(100000, 999999);
 
 if ($mailer->sendVerification($testEmail, $verificationCode)) {
-    echo "✅ Mail sent successfully to $testEmail with code: $verificationCode";
+    echo "Mail sent successfully to $testEmail with code: $verificationCode";
 } else {
-    echo "❌ Failed to send mail.";
+    echo "Failed to send mail.";
 }

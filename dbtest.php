@@ -11,11 +11,11 @@ try {
     require_once __DIR__ . '/autoload.php';    
     require_once __DIR__ . '/conf/conf.php';
 
-    echo "=== Autoloader Test ===\n";
-    echo "✓ Custom autoloader loaded successfully\n\n";
+    echo " Autoloader Test \n";
+    echo " Custom autoloader loaded successfully\n\n";
 
     // Test 1: Check if environment variables are loaded
-    echo "=== Environment Variables Test ===\n";
+    echo "Environment Variables Test \n";
     echo "DB_TYPE: " . (defined('DB_TYPE') ? DB_TYPE : 'NOT DEFINED') . "\n";
     echo "DB_HOST: " . (defined('DB_HOST') ? DB_HOST : 'NOT DEFINED') . "\n";
     echo "DB_NAME: " . (defined('DB_NAME') ? DB_NAME : 'NOT DEFINED') . "\n";
@@ -29,47 +29,47 @@ try {
     // Test 2: Check if Database class is autoloaded
     echo "=== Database Class Autoload Test ===\n";
     if (class_exists('Database')) {
-        echo "✓ Database class found via autoloader\n";
+        echo " Database class found via autoloader\n";
         
         $database = new Database();
-        echo "✓ Database instance created successfully\n\n";
+        echo " Database instance created successfully\n\n";
 
         // Test 3: Try to connect to the database
-        echo "=== Database Connection Test ===\n";
+        echo " Database Connection Test \n";
 
         //pdo variable to store returned instance from database class
         $pdo = $database->connect();
         
         if ($pdo) {
-            echo "✓ SUCCESS: Connected to database successfully!\n\n";
+            echo " SUCCESS: Connected to database successfully!\n\n";
             
             // Test 4: Try a simple query
-            echo "=== Simple Query Test ===\n";
+            echo "Simple Query Test \n";
             try {
                 $stmt = $pdo->query("SELECT version() as db_version");
                 $result = $stmt->fetch();
                 echo "Database Version: " . $result['db_version'] . "\n\n";
                 
                 // Test 5: Check if we can access the gymly database
-                echo "=== Database Access Test ===\n";
+                echo " Database Access Test \n";
                 $stmt = $pdo->query("SELECT current_database() as db_name, current_user as db_user");
                 $result = $stmt->fetch();
                 echo "Current Database: " . $result['db_name'] . "\n";
                 echo "Current User: " . $result['db_user'] . "\n";
                 
-                echo "\n✓ ALL TESTS PASSED! Your database connection is working correctly.\n";
+                echo "\nALL TESTS PASSED! Your database connection is working correctly.\n";
                 
             } catch (PDOException $e) {
-                echo "✗ Query failed: " . $e->getMessage() . "\n";
+                echo "Query failed: " . $e->getMessage() . "\n";
                 echo "This might indicate permission issues or that the database doesn't exist.\n";
             }
             
         } else {
-            echo "✗ FAILED: Could not connect to database.\n";
+            echo "FAILED: Could not connect to database.\n";
             echo "Check your credentials and ensure the database server is accessible.\n";
         }
     } else {
-        echo "✗ Database class not found. Check your autoloader configuration.\n";
+        echo " Database class not found. Check your autoloader configuration.\n";
         echo "Make sure:\n";
         echo "1. Database class is in classes/database.php\n";
         echo "2. The filename is lowercase: database.php\n";
@@ -77,10 +77,10 @@ try {
     }
     
 } catch (Exception $e) {
-    echo "✗ ERROR: " . $e->getMessage() . "\n";
+    echo "ERROR: " . $e->getMessage() . "\n";
     echo "Check your configuration and ensure all required files are included.\n";
 }
 
 echo "</pre>";
 echo "<p>Test completed. If you see any errors, check your .env file and database credentials.</p>";
-?><?php
+?>
