@@ -74,7 +74,7 @@ class Forms {
             </div>
             
             <div class="auth-footer">
-                <p>Already have an account? <a href="signIn.php" class="auth-link">Sign In</a></p>
+                <p>Already have an account? <a href="signInPage.php" class="auth-link">Sign In</a></p>
             </div>
         </form>
     </div>
