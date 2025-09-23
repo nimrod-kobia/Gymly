@@ -69,6 +69,9 @@ class Forms {
                         <?= $this->submitButton("Create Account", "signUp"); ?>
                     </div>
                 </form>
+                 <p class="auth-footer mt-3">
+                    Already have an account? <a href="signInPage.php">Sign in</a>
+                </p>
             </div>
         </div>
         <?php
