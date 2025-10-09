@@ -93,7 +93,6 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="../pages/home.php">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/tracking.php">Tracking</a></li>
-                    <li class="nav-item"><a class="nav-link" href="../pages/pricing.php">Pricing</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/contact.php">Contact</a></li>
                 </ul>
