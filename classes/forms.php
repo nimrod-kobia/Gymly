@@ -42,7 +42,7 @@ class Forms {
         ?>
         <div class="auth-container">
             <div class="auth-card">
-                <?= $this->headerSection("Gymly", "Start your fitness journey today"); ?>
+                <?= $this->headerSection("Sign Up", "Start your fitness journey today"); ?>
                 <?= $this->alertMessages(); ?>
                 <form action="../handlers/signUpHandler.php" method="post">
                     <div class="mb-3">
@@ -130,7 +130,7 @@ class Forms {
                     </div>
                 </form>
                 <p class="auth-footer mt-3">
-                    Didn't receive a code? <a href="signInPage.php">Sign In</a>
+                    Didn't receive a code? <a href="">Resend Code</a>
                 </p>
             </div>
         </div>
