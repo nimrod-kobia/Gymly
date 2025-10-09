@@ -1,6 +1,12 @@
 <?php
-require_once "../autoload.php";
+require_once "../classes/forms.php";
+$pageTitle = "Sign Up - Create Your Account";
+include '../template/layout.php'; 
+?>
+
+<?php
 $form = new Forms();
 echo $form->signUp(); 
-include '../template/layout.php';
 ?>
+
+<?php include '../template/footer.php'; ?>
