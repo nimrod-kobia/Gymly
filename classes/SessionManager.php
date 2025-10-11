@@ -96,6 +96,18 @@ class SessionManager {
         return $_SESSION['username'] ?? null;
     }
     
+    public static function getEmail() {
+        return $_SESSION['email'] ?? null;
+    }
+    
+    public static function getFullName() {
+        return $_SESSION['full_name'] ?? null;
+    }
+    
+    public static function isVerified() {
+        return $_SESSION['is_verified'] ?? false;
+    }
+    
     // Redirect to login if not authenticated
     public static function requireAuth() {
         if (!self::isLoggedIn()) {
@@ -110,6 +122,11 @@ class SessionManager {
             header("Location: ../pages/signUpPage.php");
             exit();
         }
+    }
+    
+    // Check if user can access verification page
+    public static function canAccessVerification() {
+        return self::isInVerificationProcess() || self::isInSignupProcess();
     }
 }
 ?>
