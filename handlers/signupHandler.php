@@ -1,6 +1,4 @@
 <?php
-session_start(); // Must be at the very top
-
 require_once "../autoload.php";
 use Services\MailService;
 
@@ -50,10 +48,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["signUp"])) {
                 $mailer = new MailService();
                 $mailer->sendVerification($email, $username, $verificationCode);
 
-                // Save user info in session
-                $_SESSION['user_id'] = $userId;
-                $_SESSION['username'] = $username;
-                $_SESSION['email'] = $email;
+                // Start session immediately after signup
+                SessionManager::startSignupSession($userId, $username, $email);
+
 
                 // Redirect to verification page
                 header("Location: ../pages/verify.php");

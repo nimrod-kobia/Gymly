@@ -11,11 +11,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["signIn"])) {
         if ($signin->authenticateUser()) {
             $user = $signin->getUserData();
 
-            session_start();
-            $_SESSION["user_id"] = $user["id"];
-            $_SESSION["username"] = $user["username"];
+            // Check if user is verified
+            if (!$user['is_verified']) {
+                header("Location: ../pages/signInPage.php?error=Account+not+verified.+Please+check+your+email.");
+                exit();
+            }
 
-            header("Location: ../pages/dashboard.php?success=1");
+            // Start login session
+            SessionManager::startLoginSession($user);
+
+            // 🔥 CORRECTION: Redirect to home.php instead of dashboard.php
+            header("Location: ../pages/home.php?success=1");
             exit();
         } else {
             $errors = $signin->getErrors();
@@ -33,3 +39,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["signIn"])) {
     header("Location: ../pages/signInPage.php?error=Invalid+request");
     exit();
 }
+?>
