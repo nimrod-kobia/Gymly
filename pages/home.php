@@ -23,7 +23,7 @@ include '../template/layout.php';
     </video>
 
     <!-- Static fallback image for when video fails or ends -->
-    <img src="../assets/images/gym image stock.jpeg" alt="Gym Background" id="fallbackImage" class="hero-image d-none">
+    <img src="../assets/images/gym_image.jpeg" alt="Gym Background" id="fallbackImage" class="hero-image d-none">
 
     <div class="container position-relative z-1 text-start">
         <div class="row align-items-center min-vh-100">
@@ -202,6 +202,7 @@ include '../template/layout.php';
 }
 .text-gradient {
     background: linear-gradient(90deg, #0D6EFD, #10B981);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
