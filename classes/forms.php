@@ -44,7 +44,7 @@ class Forms {
             <div class="auth-card">
                 <?= $this->headerSection("Sign Up", "Start your fitness journey today"); ?>
                 <?= $this->alertMessages(); ?>
-                <form action="../handlers/signUpHandler.php" method="post">
+                <form action="../handlers/signupHandler.php" method="post">
                     <div class="mb-3">
                         <label for="fullname" class="form-label">Full Name</label>
                         <input type="text" name="fullname" id="fullname" class="form-control" required>
