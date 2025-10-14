@@ -14,6 +14,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["signUp"])) {
     // Initialize SignupController
     $signup = new SignupController($fullname, $username, $email, $password, $cpassword);
 
+    // Check for database connection errors immediately
+    $errors = $signup->getErrors();
+    if (!empty($errors)) {
+        $errorString = implode("|", $errors);
+        header("Location: ../pages/signUpPage.php?error=" . urlencode($errorString));
+        exit();
+    }
+
     // Validate inputs
     if ($signup->validateInputs()) {
         $signup->checkUserExists();
@@ -29,24 +37,36 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["signUp"])) {
                 $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
                 // Save verification code and expiry in the users table
-                $database = new Database();
-                $pdo = $database->connect();
-                $stmt = $pdo->prepare("
-                    UPDATE users
-                    SET verification_code = :code,
-                        code_expiry = :expires_at,
-                        is_verified = FALSE
-                    WHERE id = :id
-                ");
-                $stmt->execute([
-                    ':code'       => $verificationCode,
-                    ':expires_at' => $expiresAt,
-                    ':id'         => $userId
-                ]);
+                try {
+                    $database = new Database();
+                    $pdo = $database->connect();
+                    if ($pdo) {
+                        $stmt = $pdo->prepare("
+                            UPDATE users
+                            SET verification_code = :code,
+                                code_expiry = :expires_at,
+                                is_verified = FALSE
+                            WHERE id = :id
+                        ");
+                        $stmt->execute([
+                            ':code'       => $verificationCode,
+                            ':expires_at' => $expiresAt,
+                            ':id'         => $userId
+                        ]);
+                    }
+                } catch (PDOException $e) {
+                    error_log("Failed to save verification code: " . $e->getMessage());
+                }
 
-                // Send verification email
-                $mailer = new MailService();
-                $mailer->sendVerification($email, $username, $verificationCode);
+                // Send verification email (with error handling)
+                try {
+                    $mailer = new MailService();
+                    $mailer->sendVerification($email, $username, $verificationCode);
+                } catch (Exception $e) {
+                    // Log the error but don't stop the signup process
+                    error_log("Email sending failed: " . $e->getMessage());
+                    // You could set a flag here to show "Email not sent" message
+                }
 
                 // Start session immediately after signup
                 SessionManager::startSignupSession($userId, $username, $email);
