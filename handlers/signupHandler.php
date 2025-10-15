@@ -65,7 +65,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["signUp"])) {
                 } catch (Exception $e) {
                     // Log the error but don't stop the signup process
                     error_log("Email sending failed: " . $e->getMessage());
-                    // You could set a flag here to show "Email not sent" message
                 }
 
                 // Start session immediately after signup

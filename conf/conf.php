@@ -15,7 +15,7 @@ define('DB_CHANNEL_BINDING', $_ENV['PGCHANNELBINDING'] ?? 'require');
 
 // Session configuration - SECURITY FOCUSED
 session_set_cookie_params([
-    'lifetime' => 86400, // 24 hours
+    'lifetime' => 7200, // 2 hours
     'path' => '/',
     'domain' => $_SERVER['HTTP_HOST'] ?? 'localhost',
     'secure' => isset($_SERVER['HTTPS']), // Only send over HTTPS

@@ -9,7 +9,6 @@ if (file_exists($composerAutoloader)) {
 // Custom autoloader for project files (classes, config, services).
 // This also supports basic PSR-0/namespace -> directory mapping.
 spl_autoload_register(function ($className) {
-    // Normalize leading backslash
     $className = ltrim($className, "\\");
 
     // For Services namespace, map to lowercase services directory

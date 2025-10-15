@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['verify'])) {
                 if ($userData) {
                     // Upgrade session to logged-in state
                     SessionManager::startLoginSession($userData);
-                    // 🔥 CORRECTION: Redirect to home.php instead of dashboard.php
+                    //  Redirect to home.php instead of dashboard.php
                     header("Location: ../pages/home.php?success=verified");
                     exit();
                 }
@@ -52,5 +52,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['verify'])) {
     header("Location: ../pages/verify.php?error=Invalid+request");
     exit();
 }
-
 ?>

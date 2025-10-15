@@ -9,9 +9,9 @@ session_start();
 $sessionManagerPath = __DIR__ . '/../classes/SessionManager.php';
 if (file_exists($sessionManagerPath)) {
     require_once $sessionManagerPath;
-    echo "<p style='color: green;'>✅ SessionManager.php loaded</p>";
+    echo "<p style='color: green;'> SessionManager.php loaded</p>";
 } else {
-    echo "<p style='color: red;'>❌ SessionManager.php NOT found at: $sessionManagerPath</p>";
+    echo "<p style='color: red;'> SessionManager.php NOT found at: $sessionManagerPath</p>";
 }
 
 // Show current session
