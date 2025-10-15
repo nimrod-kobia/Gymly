@@ -41,6 +41,7 @@ require_once "../classes/SessionManager.php";
                     <li class="nav-item"><a class="nav-link text-white" href="../pages/shop.php">Shop</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="../pages/about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="../pages/contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="../pages/users.php">Users</a></li>
                 </ul>
 
                 <div class="d-flex align-items-center gap-2 ms-lg-4">
