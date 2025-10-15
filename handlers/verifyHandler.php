@@ -52,4 +52,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['verify'])) {
     header("Location: ../pages/verify.php?error=Invalid+request");
     exit();
 }
+
 ?>
