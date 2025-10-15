@@ -29,7 +29,7 @@ require_once "../classes/SessionManager.php";
             <a class="navbar-brand d-flex align-items-center gap-2" href="../pages/home.php">
                 <img src="../assets/images/logo.png" alt="Gymly Logo" width="40" height="40" class="d-inline-block align-text-top">
                 <span class="fw-bold fs-4">Gymly</span>
-
+            </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="bi bi-list text-white fs-1"></span>
             </button>
