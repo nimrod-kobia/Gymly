@@ -10,7 +10,7 @@ use Illuminate\Database\Schema\Blueprint;
 
 // Check if migrations table exists
 if (!$capsule->schema()->hasTable('migrations')) {
-    echo "❌ No migrations table found. Nothing to rollback.\n";
+    echo " No migrations table found. Nothing to rollback.\n";
     exit(0);
 }
 
@@ -22,7 +22,7 @@ $steps = isset($options['step']) ? (int)$options['step'] : 1;
 $lastBatch = $capsule->table('migrations')->max('batch');
 
 if (!$lastBatch) {
-    echo "✅ No migrations to rollback\n";
+    echo " No migrations to rollback\n";
     exit(0);
 }
 
@@ -37,20 +37,20 @@ $migrationsToRollback = $capsule->table('migrations')
     ->get();
 
 if ($migrationsToRollback->isEmpty()) {
-    echo "✅ No migrations to rollback\n";
+    echo " No migrations to rollback\n";
     exit(0);
 }
 
-echo "🔄 Rolling back " . $migrationsToRollback->count() . " migration(s)...\n\n";
+echo " Rolling back " . $migrationsToRollback->count() . " migration(s)...\n\n";
 
 foreach ($migrationsToRollback as $migration) {
-    echo "⏪ Rolling back: {$migration->migration}...";
+    echo " Rolling back: {$migration->migration}...";
     
     try {
         $file = __DIR__ . '/../database/migrations/' . $migration->migration . '.php';
         
         if (!file_exists($file)) {
-            echo " ❌ FAILED (File not found)\n";
+            echo "  FAILED (File not found)\n";
             continue;
         }
         
@@ -77,16 +77,16 @@ foreach ($migrationsToRollback as $migration) {
                 ->where('id', $migration->id)
                 ->delete();
             
-            echo " ✅ DONE\n";
+            echo " DONE\n";
         } else {
-            echo " ❌ FAILED (Class $className not found)\n";
+            echo " FAILED (Class $className not found)\n";
         }
         
     } catch (Exception $e) {
-        echo " ❌ FAILED\n";
+        echo " FAILED\n";
         echo "Error: " . $e->getMessage() . "\n";
         exit(1);
     }
 }
 
-echo "\n✅ Rollback completed successfully!\n";
+echo "\n Rollback completed successfully!\n";

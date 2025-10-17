@@ -6,12 +6,12 @@
 
 $capsule = require_once __DIR__ . '/bootstrap.php';
 
-echo "📊 Migration Status\n";
+echo "Migration Status\n";
 echo "==================\n\n";
 
 // Check if migrations table exists
 if (!$capsule->schema()->hasTable('migrations')) {
-    echo "❌ Migrations table doesn't exist yet.\n";
+    echo " Migrations table doesn't exist yet.\n";
     echo "   Run: php scripts/migrate.php\n";
     exit(0);
 }
@@ -23,12 +23,12 @@ $ranMigrations = $capsule->table('migrations')
     ->get();
 
 if ($ranMigrations->isEmpty()) {
-    echo "⚠️  No migrations have been run yet.\n";
+    echo "No migrations have been run yet.\n";
     echo "   Run: php scripts/migrate.php\n";
     exit(0);
 }
 
-echo "✅ Migrations Run:\n\n";
+echo "Migrations Run:\n\n";
 
 $currentBatch = null;
 foreach ($ranMigrations as $migration) {
@@ -36,7 +36,7 @@ foreach ($ranMigrations as $migration) {
         $currentBatch = $migration->batch;
         echo "Batch {$currentBatch}:\n";
     }
-    echo "  ✓ {$migration->migration}\n";
+    echo "   {$migration->migration}\n";
 }
 
 echo "\n";
@@ -54,12 +54,12 @@ foreach ($migrationFiles as $file) {
 }
 
 if (!empty($pendingMigrations)) {
-    echo "⏳ Pending Migrations:\n\n";
+    echo "Pending Migrations:\n\n";
     foreach ($pendingMigrations as $pending) {
         echo "  • {$pending}\n";
     }
     echo "\n";
     echo "Run: php scripts/migrate.php\n";
 } else {
-    echo "✅ All migrations are up to date!\n";
+    echo "All migrations are up to date!\n";
 }

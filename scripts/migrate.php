@@ -15,7 +15,7 @@ if (!$capsule->schema()->hasTable('migrations')) {
         $table->string('migration');
         $table->integer('batch');
     });
-    echo "✅ Created migrations table\n";
+    echo "Created migrations table\n";
 }
 
 // Get all migration files
@@ -23,7 +23,7 @@ $migrationFiles = glob(__DIR__ . '/../database/migrations/*.php');
 sort($migrationFiles);
 
 if (empty($migrationFiles)) {
-    echo "⚠️  No migration files found in database/migrations/\n";
+    echo "  No migration files found in database/migrations/\n";
     exit(0);
 }
 
@@ -51,11 +51,11 @@ foreach ($migrationFiles as $file) {
 }
 
 if (empty($migrationsToRun)) {
-    echo "✅ Nothing to migrate - all migrations are up to date\n";
+    echo "Nothing to migrate - all migrations are up to date\n";
     exit(0);
 }
 
-echo "🚀 Running " . count($migrationsToRun) . " migration(s)...\n\n";
+echo " Running " . count($migrationsToRun) . " migration(s)...\n\n";
 
 foreach ($migrationsToRun as $migration) {
     echo "⚡ Migrating: {$migration['name']}...";
@@ -86,16 +86,16 @@ foreach ($migrationsToRun as $migration) {
                 'batch' => $nextBatch
             ]);
             
-            echo " ✅ DONE\n";
+            echo " DONE\n";
         } else {
-            echo " ❌ FAILED (Class $className not found)\n";
+            echo " FAILED (Class $className not found)\n";
         }
         
     } catch (Exception $e) {
-        echo " ❌ FAILED\n";
+        echo " FAILED\n";
         echo "Error: " . $e->getMessage() . "\n";
         exit(1);
     }
 }
 
-echo "\n✅ All migrations completed successfully!\n";
+echo "\n All migrations completed successfully!\n";

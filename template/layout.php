@@ -1,5 +1,5 @@
 <?php
-// layout.php — Clean dark theme with invisible transparent navbar
+// layout.php — Global layout (dark theme + DataTables + Bootstrap)
 session_start();
 require_once "../classes/SessionManager.php";
 ?>
@@ -11,23 +11,29 @@ require_once "../classes/SessionManager.php";
     <title><?php echo $pageTitle ?? 'Gymly - Your Fitness Journey'; ?></title>
     <link rel="icon" type="image/png" href="../assets/images/logo.png">
 
-    <!-- Bootstrap + Icons -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Fonts -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css">
 
     <!-- Global Dark Theme -->
     <link rel="stylesheet" href="../assets/css/dark-theme.css">
+
 </head>
 
-<body class="bg-black text-light">
-    <!-- Transparent Navbar (minimalist) -->
+<body>
+    <!-- Transparent Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent border-0 shadow-none py-3">
         <div class="container-fluid px-4">
             <a class="navbar-brand d-flex align-items-center gap-2" href="../pages/home.php">
-                <img src="../assets/images/logo.png" alt="Gymly Logo" width="40" height="40" class="d-inline-block align-text-top">
+                <img src="../assets/images/logo.png" alt="Gymly Logo" width="40" height="40">
                 <span class="fw-bold fs-4">Gymly</span>
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -36,12 +42,12 @@ require_once "../classes/SessionManager.php";
 
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav align-items-center gap-lg-4">
-                    <li class="nav-item"><a class="nav-link text-white" href="../pages/home.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="../pages/tracking.php">Tracking</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="../pages/shop.php">Shop</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="../pages/about.php">About</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="../pages/contact.php">Contact</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="../pages/users.php">Users</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/home.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/tracking.php">Tracking</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/shop.php">Shop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/users.php">Users</a></li>
                 </ul>
 
                 <div class="d-flex align-items-center gap-2 ms-lg-4">
@@ -64,5 +70,5 @@ require_once "../classes/SessionManager.php";
         </div>
     </nav>
 
-    <!-- Main Page Content -->
-    <main class="main-content pt-5">
+    <!-- Page Content -->
+    <main class="main-content container-fluid">

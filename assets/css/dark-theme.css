@@ -196,3 +196,14 @@ body {
     border: 1px solid #10B981;
     color: #34D399;
 }
+.dataTables_wrapper .dataTables_filter input {
+    background-color: #1C1C1C;
+    color: #E5E7EB;
+    border: 1px solid #2D2D2D;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: #E5E7EB !important;
+}
+.dataTables_wrapper .dataTables_info {
+    color: #9CA3AF;
+}
