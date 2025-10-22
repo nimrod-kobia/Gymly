@@ -198,4 +198,11 @@ body {
     border: 1px solid #10B981;
     color: #34D399;
 }
+.tracker-wrapper .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.tracker-wrapper .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+}
 

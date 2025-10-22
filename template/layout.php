@@ -43,7 +43,7 @@ require_once "../classes/SessionManager.php";
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav align-items-center gap-lg-4">
                     <li class="nav-item"><a class="nav-link" href="../pages/home.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="../pages/tracking.php">Tracking</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/track.php">Tracking</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/shop.php">Shop</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/contact.php">Contact</a></li>
