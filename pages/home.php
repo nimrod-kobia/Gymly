@@ -34,29 +34,29 @@ include '../template/layout.php';
                         Welcome back, <?php echo htmlspecialchars(SessionManager::getUsername()); ?>!
                     </h1>
                     <p class="lead mb-4 text-light">
-                        Continue your fitness journey. Track your progress, join classes, and achieve your goals.
+                        Continue your fitness journey. Track your progress and achieve your goals.
                     </p>
 
                     <!-- Navigation Buttons -->
                     <div class="d-flex gap-3 flex-wrap">
-                        <a href="tracking.php" class="btn btn-primary btn-lg fw-semibold">
+                        <a href="track.php" class="btn btn-primary btn-lg fw-semibold">
                             <i class="bi bi-graph-up-arrow me-2"></i> Continue Tracking
                         </a>
-                        <a href="classes.php" class="btn btn-outline-light btn-lg fw-semibold">
-                            <i class="bi bi-calendar-check me-2"></i> Browse Classes
+                        <a href="shop.php" class="btn btn-outline-light btn-lg fw-semibold">
+                            <i class="bi bi-cart3 me-2" aria-hidden="true"></i> Shop now
                         </a>
                     </div>
                 <?php else: ?>
                     <!-- Default (unauthenticated) view -->
                     <h1 class="display-4 fw-bold mb-4 text-gradient">Start Your Fitness Journey</h1>
                     <p class="lead mb-4 text-light">
-                        Track your progress, join classes, and achieve your fitness goals with Gymly’s all-in-one fitness platform.
+                        Track your progress and achieve your fitness goals with Gymly’s all-in-one fitness platform.
                     </p>
                     <div class="d-flex gap-3 flex-wrap">
                         <a href="signUpPage.php" class="btn btn-primary btn-lg fw-semibold">
                             <i class="bi bi-person-plus me-2"></i> Get Started
                         </a>
-                        <a href="pricing.php" class="btn btn-outline-light btn-lg fw-semibold">
+                        <a href="plans.php" class="btn btn-outline-light btn-lg fw-semibold">
                             <i class="bi bi-tags me-2"></i> View Plans
                         </a>
                     </div>
@@ -122,7 +122,7 @@ include '../template/layout.php';
                     <i class="bi bi-graph-up text-primary fs-2 mb-3"></i>
                     <h4 class="fw-semibold text-white">Progress Tracking</h4>
                     <p class="text-light">Monitor your workouts and real-time stats.</p>
-                    <a href="<?php echo SessionManager::isLoggedIn() ? 'tracking.php' : 'signUpPage.php'; ?>" 
+                    <a href="<?php echo SessionManager::isLoggedIn() ? 'track.php' : 'signUpPage.php'; ?>" 
                        class="btn btn-outline-light btn-sm">View Progress</a>
                 </div>
             </div>
@@ -130,8 +130,8 @@ include '../template/layout.php';
                 <div class="feature-card bg-black p-4 rounded-4 border border-secondary">
                     <i class="bi bi-people text-primary fs-2 mb-3"></i>
                     <h4 class="fw-semibold text-white">Community</h4>
-                    <p class="text-light">Join others and stay motivated together.</p>
-                    <a href="community.php" class="btn btn-outline-light btn-sm">Join Now</a>
+                    <p class="text-light">See other users and stay motivated together.</p>
+                    <a href="users.php" class="btn btn-outline-light btn-sm">See Users</a>
                 </div>
             </div>
             <div class="col-md-4">
@@ -139,7 +139,9 @@ include '../template/layout.php';
                     <i class="bi bi-shop text-primary fs-2 mb-3"></i>
                     <h4 class="fw-semibold text-white">Gym Store</h4>
                     <p class="text-light">Get premium fitness gear and supplements.</p>
-                    <a href="shop.php" class="btn btn-outline-light btn-sm">Shop Now</a>
+                    <a href="shop.php" class="btn btn-outline-light btn-sm" aria-label="Shop now">
+                        Shop Now <span class="ms-2" aria-hidden="true"></span>
+                    </a>
                 </div>
             </div>
         </div>
