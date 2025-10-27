@@ -81,7 +81,7 @@ include '../template/layout.php';
 
 <!-- INTEGRATED HERO SECTION WITH DUAL COLUMN CAROUSEL -->
 <section class="hero-section position-relative text-white overflow-hidden">
-    <div class="container position-relative z-1 py-5 mt-5">
+    <div class="container position-relative z-1 py-5">
         <div class="row align-items-center">
             <!-- Left Column - Content -->
             <div class="col-lg-6">
@@ -142,26 +142,32 @@ include '../template/layout.php';
                 <div class="dual-carousel-container position-relative" style="height: 500px;">
                     <!-- Left Column Carousel (Moving Down) -->
                     <div class="carousel-column position-absolute" style="left: 0; width: 48%;">
-                        <div class="vertical-carousel-down" style="height: 100%; overflow: hidden;">
+                        <div class="vertical-carousel-down" style="height: 100%; overflow: visible;">
                             <div class="carousel-track-down" style="animation: scrollDown 20s linear infinite;">
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_image.jpeg" alt="Gym Image" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_nutrition.jpeg" alt="Gym Nutrition" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_image.jpeg" alt="Gym Image" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_nutrition.jpeg" alt="Gym Nutrition" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <!-- Duplicate for seamless loop -->
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_image.jpeg" alt="Gym Image" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_nutrition.jpeg" alt="Gym Nutrition" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                             </div>
                         </div>
@@ -169,26 +175,32 @@ include '../template/layout.php';
 
                     <!-- Right Column Carousel (Moving Up) -->
                     <div class="carousel-column position-absolute" style="right: 0; width: 48%;">
-                        <div class="vertical-carousel-up" style="height: 100%; overflow: hidden;">
+                        <div class="vertical-carousel-up" style="height: 100%; overflow: visible;">
                             <div class="carousel-track-up" style="animation: scrollUp 20s linear infinite;">
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_nutrition.jpeg" alt="Gym Nutrition" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_image.jpeg" alt="Gym Image" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_nutrition.jpeg" alt="Gym Nutrition" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_image.jpeg" alt="Gym Image" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <!-- Duplicate for seamless loop -->
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_nutrition.jpeg" class="w-100 rounded-3" alt="Gym Nutrition" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_nutrition.jpeg" alt="Gym Nutrition" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                                 <div class="carousel-slide-vertical mb-3">
-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
+-                                    <img src="../assets/images/gym_image.jpeg" class="w-100 rounded-3" alt="Gym Image" style="height: 150px; object-fit: cover;">
++                                    <img src="../assets/images/gym_image.jpeg" alt="Gym Image" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:0;">
                                 </div>
                             </div>
                         </div>
@@ -424,13 +436,15 @@ include '../template/layout.php';
 <style>
 .text-gradient {
     background: linear-gradient(90deg, #0D6EFD, #10B981);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .hero-section {
     background: radial-gradient(circle at left, #0D0D0D, #000);
-    padding-top: 100px;
+    /* top padding set by JS to match the navbar; keeps banner tight under header */
+    padding-top: 0;
     padding-bottom: 80px;
     min-height: 80vh;
     display: flex;
@@ -453,8 +467,8 @@ include '../template/layout.php';
 
 /* Dual Carousel Styles */
 .dual-carousel-container {
-    border-radius: 20px;
-    overflow: hidden;
+    border-radius: 0; /* make edges flush so images feel free-flowing */
+    overflow: visible;
 }
 
 .carousel-column {
@@ -474,6 +488,15 @@ include '../template/layout.php';
 
 .carousel-slide-vertical {
     flex-shrink: 0;
+}
+
+/* Ensure images flow natural and not boxed */
+.carousel-slide-vertical img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 0;
 }
 
 /* Animations */
@@ -501,3 +524,36 @@ include '../template/layout.php';
     animation-play-state: paused;
 }
 </style>
+
+<!-- ensure hero sits directly under navbar -->
+<script>
+(function () {
+    function adjustHeroSpacing() {
+        var hero = document.querySelector('.hero-section');
+        if (!hero) return;
+        var navbar = document.querySelector('#mainNavbar') || document.querySelector('nav.navbar') || document.querySelector('.navbar');
+        var navHeight = 0;
+        if (navbar) {
+            var rect = navbar.getBoundingClientRect();
+            navHeight = Math.ceil(rect.height) || 0;
+            var navbarStyle = window.getComputedStyle(navbar);
+            if (navbarStyle.position === 'fixed' || navbarStyle.position === 'sticky') {
+                var currentBodyPadding = parseInt(window.getComputedStyle(document.body).paddingTop, 10) || 0;
+                if (currentBodyPadding < navHeight) {
+                    document.body.style.paddingTop = navHeight + 'px';
+                }
+            }
+        } else {
+            navHeight = 56;
+        }
+        hero.style.paddingTop = (navHeight + 8) + 'px';
+        hero.style.minHeight = 'calc(100vh - ' + navHeight + 'px)';
+    }
+    document.addEventListener('DOMContentLoaded', adjustHeroSpacing);
+    window.addEventListener('resize', function () {
+        clearTimeout(window._adjustHeroSpacingTimer);
+        window._adjustHeroSpacingTimer = setTimeout(adjustHeroSpacing, 120);
+    });
+    setTimeout(adjustHeroSpacing, 400);
+})();
+</script>
