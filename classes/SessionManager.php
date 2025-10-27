@@ -17,6 +17,7 @@ class SessionManager {
         $_SESSION['email'] = $userData['email'];
         $_SESSION['full_name'] = $userData['full_name'];
         $_SESSION['is_verified'] = $userData['is_verified'];
+        $_SESSION['role'] = $userData['role'] ?? 'user'; // Store user role
         $_SESSION['auth_stage'] = 'logged_in';
         $_SESSION['session_started'] = time();
         $_SESSION['last_activity'] = time(); // For timeout tracking
@@ -108,10 +109,29 @@ class SessionManager {
         return $_SESSION['is_verified'] ?? false;
     }
     
+    public static function getRole() {
+        return $_SESSION['role'] ?? 'user';
+    }
+    
+    // Check if current user is an admin
+    public static function isAdmin() {
+        return self::isLoggedIn() && 
+               isset($_SESSION['role']) && 
+               $_SESSION['role'] === 'admin';
+    }
+    
     // Redirect to login if not authenticated
     public static function requireAuth() {
         if (!self::isLoggedIn()) {
             header("Location: ../pages/signInPage.php");
+            exit();
+        }
+    }
+    
+    // Redirect to home if not admin
+    public static function requireAdmin() {
+        if (!self::isAdmin()) {
+            header("Location: ../pages/home.php?error=" . urlencode("Access denied. Admin only."));
             exit();
         }
     }

@@ -51,8 +51,8 @@ class SignupController {
             $passwordHash = password_hash($this->password, PASSWORD_DEFAULT);
 
             $stmt = $this->pdo->prepare("
-                INSERT INTO users (full_name, username, email, password_hash, created_at, updated_at)
-                VALUES (:fullname, :username, :email, :password_hash, NOW(), NOW())
+                INSERT INTO users (full_name, username, email, password_hash, role, created_at, updated_at)
+                VALUES (:fullname, :username, :email, :password_hash, 'user', NOW(), NOW())
                 RETURNING id
             ");
             $stmt->execute([
