@@ -1,12 +1,19 @@
 <?php
 require_once "../autoload.php";
-$pageTitle = "Users";
+
+// Require admin access
+SessionManager::requireAdmin();
+
+$pageTitle = "Users - Admin Panel";
 include "../template/layout.php";
 ?>
 
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-light fw-bold mb-0">Registered Users</h2>
+        <h2 class="text-light fw-bold mb-0">
+            <i class="bi bi-shield-lock-fill text-warning"></i> 
+            Registered Users (Admin Only)
+        </h2>
     </div>
 
     <div class="table-responsive">

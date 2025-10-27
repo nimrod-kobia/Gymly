@@ -86,7 +86,7 @@ class Forms {
             <div class="auth-card">
                 <?= $this->headerSection("Sign In", "Welcome back! Please enter your credentials"); ?>
                 <?= $this->alertMessages(); ?>
-                <form method="post" action="../handlers/signInHandler.php">
+                <form method="post" action="../handlers/signinHandler.php">
                     <div class="mb-3">
                         <label for="usernameOrEmail" class="form-label">Username or Email</label>
                         <input type="text" name="usernameOrEmail" id="usernameOrEmail" class="form-control" required>

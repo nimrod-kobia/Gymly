@@ -47,7 +47,14 @@ require_once "../classes/SessionManager.php";
                     <li class="nav-item"><a class="nav-link" href="../pages/shop.php">Shop</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/contact.php">Contact</a></li>
-                    <li class="nav-item"><a class="nav-link" href="../pages/users.php">Users</a></li>
+                    
+                    <?php if (SessionManager::isAdmin()): ?>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="../pages/users.php">
+                            <i class="bi bi-people-fill"></i> Users
+                        </a>
+                    </li>
+                    <?php endif; ?>
                 </ul>
 
                 <div class="d-flex align-items-center gap-2 ms-lg-4">
