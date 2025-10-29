@@ -11,6 +11,15 @@ $success = '';
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (empty($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(16));
 
+// fetch latest user row (matching datatables columns) BEFORE handling post so we can compare originals
+$stmt = $pdo->prepare("SELECT id, full_name, username, email, role, is_verified, created_at, updated_at FROM users WHERE id = ? LIMIT 1");
+$stmt->execute([$userId]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$user) {
+    echo "<p class='text-danger text-center'>User not found.</p>";
+    exit;
+}
+
 // handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'update_profile') {
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
@@ -22,34 +31,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
 
         if ($full_name === '' || $username === '' || $email === '') {
             $errors[] = 'All fields are required.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Invalid email address.';
         } else {
-            // check uniqueness for username/email
-            $check = $pdo->prepare("SELECT id FROM users WHERE (username = ? OR email = ?) AND id <> ? LIMIT 1");
-            $check->execute([$username, $email, $userId]);
-            if ($check->fetch()) {
-                $errors[] = 'Username or email already in use.';
-            } else {
-                $upd = $pdo->prepare("UPDATE users SET full_name = ?, username = ?, email = ?, updated_at = NOW() WHERE id = ?");
-                $ok = $upd->execute([$full_name, $username, $email, $userId]);
-                if ($ok) {
-                    $success = 'Profile updated successfully.';
+            // Only check uniqueness for fields that actually changed
+            $origUsername = $user['username'];
+            $origEmail = $user['email'];
+
+            // validate email if changed
+            if ($email !== $origEmail) {
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $errors[] = 'Invalid email address.';
                 } else {
-                    $errors[] = 'Could not update profile, try again later.';
+                    $checkEmail = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1");
+                    $checkEmail->execute([$email, $userId]);
+                    if ($checkEmail->fetch()) {
+                        $errors[] = 'Email already in use by another account.';
+                    }
+                }
+            }
+
+            // validate username if changed
+            if ($username !== $origUsername) {
+                // optional: simple username format rule
+                if (!preg_match('/^[a-zA-Z0-9_.-]{3,30}$/', $username)) {
+                    $errors[] = 'Username must be 3-30 characters and contain only letters, numbers, dot, underscore or hyphen.';
+                } else {
+                    $checkUser = $pdo->prepare("SELECT id FROM users WHERE username = ? AND id <> ? LIMIT 1");
+                    $checkUser->execute([$username, $userId]);
+                    if ($checkUser->fetch()) {
+                        $errors[] = 'Username already in use by another account.';
+                    }
+                }
+            }
+
+            // If no uniqueness/validation errors, perform update (only changed fields)
+            if (empty($errors)) {
+                $fields = [];
+                $params = [];
+
+                if ($full_name !== $user['full_name']) {
+                    $fields[] = "full_name = ?";
+                    $params[] = $full_name;
+                }
+                if ($username !== $user['username']) {
+                    $fields[] = "username = ?";
+                    $params[] = $username;
+                }
+                if ($email !== $user['email']) {
+                    $fields[] = "email = ?";
+                    $params[] = $email;
+                }
+
+                // always update updated_at
+                $fields[] = "updated_at = NOW()";
+
+                if (!empty($params)) {
+                    $sql = "UPDATE users SET " . implode(", ", $fields) . " WHERE id = ?";
+                    $params[] = $userId;
+                    $upd = $pdo->prepare($sql);
+                    $ok = $upd->execute($params);
+                    if ($ok) {
+                        $success = 'Profile updated successfully.';
+                        // refresh $user with latest data
+                        $stmt = $pdo->prepare("SELECT id, full_name, username, email, role, is_verified, created_at, updated_at FROM users WHERE id = ? LIMIT 1");
+                        $stmt->execute([$userId]);
+                        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                    } else {
+                        $errors[] = 'Could not update profile, try again later.';
+                    }
+                } else {
+                    
+                    $success = 'No changes detected.';
                 }
             }
         }
     }
-}
-
-// fetch latest user row (matching datatables columns)
-$stmt = $pdo->prepare("SELECT id, full_name, username, email, role, is_verified, created_at, updated_at FROM users WHERE id = ? LIMIT 1");
-$stmt->execute([$userId]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$user) {
-    echo "<p class='text-danger text-center'>User not found.</p>";
-    exit;
 }
 
 $pageTitle = "Profile | Gymly";
@@ -179,3 +234,4 @@ include '../template/layout.php';
 </main>
 
 <?php include '../template/footer.php'; ?>
+
