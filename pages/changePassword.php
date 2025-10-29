@@ -1,49 +1,121 @@
 <?php
+// changePassword.php — Change user password with validation + safe DB handling
+
+// start session early
+if (session_status() === PHP_SESSION_NONE) session_start();
+
 require_once "../autoload.php";
+
+// require authenticated user
 SessionManager::requireAuth();
 
-if (session_status() === PHP_SESSION_NONE) session_start();
-if (empty($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(16));
+$pageTitle = "Change Password | Gymly";
 
-$pdo = (new Database())->connect();
+$pdo = null;
+try {
+    $pdo = (new Database())->connect();
+    // ensure PDO throws exceptions
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (Exception $e) {
+    error_log("changePassword.php DB connect error: " . $e->getMessage());
+    http_response_code(500);
+    echo "Server error. Check logs.";
+    exit;
+}
+
+// CSRF token
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(16));
+}
+
 $userId = SessionManager::getUserId();
 $errors = [];
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'change_password') {
-    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
-        $errors[] = 'Invalid request.';
-    } else {
-        $current = $_POST['current_password'] ?? '';
-        $new = $_POST['new_password'] ?? '';
-        $confirm = $_POST['confirm_password'] ?? '';
+    try {
+        // basic CSRF check
+        $postedToken = $_POST['csrf_token'] ?? '';
+        if (!hash_equals((string)$_SESSION['csrf_token'], (string)$postedToken)) {
+            throw new RuntimeException('Invalid request (CSRF).');
+        }
 
+        $current = (string)($_POST['current_password'] ?? '');
+        $new = (string)($_POST['new_password'] ?? '');
+        $confirm = (string)($_POST['confirm_password'] ?? '');
+
+        // validations
         if ($current === '' || $new === '' || $confirm === '') {
-            $errors[] = 'All fields are required.';
-        } elseif ($new !== $confirm) {
-            $errors[] = 'New passwords do not match.';
-        } elseif (strlen($new) < 8) {
-            $errors[] = 'New password must be at least 8 characters.';
-        } else {
-            $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ? LIMIT 1");
-            $stmt->execute([$userId]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (!$row || !password_verify($current, $row['password'])) {
-                $errors[] = 'Current password is incorrect.';
-            } else {
-                $hash = password_hash($new, PASSWORD_DEFAULT);
-                $upd = $pdo->prepare("UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?");
-                if ($upd->execute([$hash, $userId])) {
-                    $success = 'Password changed successfully.';
-                } else {
-                    $errors[] = 'Could not update password, try again later.';
-                }
+            throw new RuntimeException('All fields are required.');
+        }
+        if ($new !== $confirm) {
+            throw new RuntimeException('New passwords do not match.');
+        }
+        if (strlen($new) < 8) {
+            throw new RuntimeException('New password must be at least 8 characters long.');
+        }
+
+        // fetch current row (attempt to adapt to whatever column name your users table uses)
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
+        $stmt->execute([$userId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            throw new RuntimeException('Account not found.');
+        }
+
+        // detect password column name (common variants)
+        $possible = [
+            'password','pwd','passwd','password_hash','hashed_password','pass','user_password','secret','pw'
+        ];
+        $pwField = null;
+        foreach ($possible as $p) {
+            if (array_key_exists($p, $row)) {
+                $pwField = $p;
+                break;
+            }
+            // also check uppercase variant (some PG returns lowercase, but just in case)
+            if (array_key_exists(strtoupper($p), $row)) {
+                $pwField = strtoupper($p);
+                break;
             }
         }
+
+        if ($pwField === null) {
+            // helpful log for debugging schema mismatch
+            error_log("changePassword.php: could not find password column for user id {$userId}. Columns: " . implode(',', array_keys($row)));
+            throw new RuntimeException('Account password field not found. Contact support.');
+        }
+
+        $storedHash = $row[$pwField] ?? '';
+        if (empty($storedHash)) {
+            throw new RuntimeException('Account password not set. Contact support.');
+        }
+
+        if (!password_verify($current, $storedHash)) {
+            throw new RuntimeException('Current password is incorrect.');
+        }
+
+        // hash and update — update the same column we detected
+        $hash = password_hash($new, PASSWORD_DEFAULT);
+        $updSql = "UPDATE users SET {$pwField} = ?, updated_at = NOW() WHERE id = ?";
+        $upd = $pdo->prepare($updSql);
+        $ok = $upd->execute([$hash, $userId]);
+        if (!$ok) {
+            throw new RuntimeException('Unable to update password. Try again later.');
+        }
+
+        $success = 'Password changed successfully.';
+        // rotate CSRF token after successful action
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(16));
+    } catch (RuntimeException $ex) {
+        $errors[] = $ex->getMessage();
+    } catch (Exception $ex) {
+        // log unexpected exceptions and show generic message
+        error_log("changePassword.php error (user {$userId}): " . $ex->getMessage());
+        $errors[] = 'Server error. Please try again later.';
     }
 }
 
-$pageTitle = "Change Password | Gymly";
 include '../template/layout.php';
 ?>
 
