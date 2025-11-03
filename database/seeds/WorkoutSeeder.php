@@ -10,6 +10,7 @@ class WorkoutSeeder
         
         $this->seedExercises();
         $this->seedWorkoutSplits();
+        $this->populateWorkoutSplitsWithExercises();
         $this->seedAchievements();
         $this->seedChallenges();
         
@@ -101,12 +102,433 @@ class WorkoutSeeder
      */
     private function seedWorkoutSplits()
     {
-        echo "  📝 Seeding workout splits...\n";
+        echo "  📝 Seeding preset workout splits...\n";
         
-        // We'll create these as templates that can be copied to users
-        // For now, just showing the structure - you'd assign these to users during onboarding
+        // Define preset splits
+        $presetSplits = [
+            [
+                'split_name' => 'Push Pull Legs',
+                'description' => '6-day training split focusing on push muscles (chest, shoulders, triceps), pull muscles (back, biceps), and legs. Excellent for intermediate to advanced lifters.',
+            ],
+            [
+                'split_name' => 'Bro Split',
+                'description' => '5-day split targeting one major muscle group per day (Chest, Back, Shoulders, Arms, Legs). Classic bodybuilding split.',
+            ],
+            [
+                'split_name' => 'Upper Lower',
+                'description' => '4-day split alternating between upper and lower body workouts. Great for strength and balanced development.',
+            ],
+            [
+                'split_name' => 'Full Body',
+                'description' => '3-day full body workout hitting all major muscle groups each session. Perfect for beginners or those with limited time.',
+            ],
+        ];
         
-        echo "    ✓ Workout split templates ready (assign during user setup)\n";
+        $seededCount = 0;
+        foreach ($presetSplits as $split) {
+            // Check if this specific split exists
+            $exists = Capsule::table('workout_splits')
+                ->where('split_name', $split['split_name'])
+                ->where('split_type', 'preset')
+                ->exists();
+            
+            if (!$exists) {
+                Capsule::table('workout_splits')->insert([
+                    'split_name' => $split['split_name'],
+                    'split_type' => 'preset',
+                    'description' => $split['description'],
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+                $seededCount++;
+            }
+        }
+        
+        if ($seededCount > 0) {
+            echo "    ✓ Seeded $seededCount preset workout splits\n";
+        } else {
+            echo "    ⚠ All preset splits already exist\n";
+        }
+    }
+    
+    /**
+     * Populate workout splits with exercises
+     */
+    private function populateWorkoutSplitsWithExercises()
+    {
+        echo "  💪 Populating splits with exercises...\n";
+        
+        // Get all preset splits
+        $splits = Capsule::table('workout_splits')
+            ->where('split_type', 'preset')
+            ->get();
+        
+        foreach ($splits as $split) {
+            // Check if split already has days
+            $hasDays = Capsule::table('split_days')
+                ->where('split_id', $split->id)
+                ->exists();
+            
+            if ($hasDays) {
+                continue; // Skip if already populated
+            }
+            
+            // Populate based on split name
+            switch ($split->split_name) {
+                case 'Full Body':
+                    $this->populateFullBodySplit($split->id);
+                    break;
+                case 'Push Pull Legs':
+                    $this->populatePushPullLegsSplit($split->id);
+                    break;
+                case 'Bro Split':
+                    $this->populateBroSplit($split->id);
+                    break;
+                case 'Upper Lower':
+                    $this->populateUpperLowerSplit($split->id);
+                    break;
+            }
+        }
+        
+        echo "    ✓ Populated preset splits with exercises\n";
+    }
+    
+    /**
+     * Populate Full Body Split (3 days)
+     */
+    private function populateFullBodySplit($splitId)
+    {
+        $days = ['Day A', 'Day B', 'Day C'];
+        
+        foreach ($days as $index => $dayName) {
+            $dayId = Capsule::table('split_days')->insertGetId([
+                'split_id' => $splitId,
+                'day_name' => $dayName,
+                'day_of_week' => ($index * 2) + 1, // Mon, Wed, Fri
+                'is_rest_day' => false,
+                'display_order' => $index + 1,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+            
+            // Full body exercises - covering all major muscle groups
+            $exercises = [
+                ['Barbell Squat', 4, '8-12', 180],          // Legs
+                ['Barbell Bench Press', 4, '8-12', 120],    // Chest
+                ['Barbell Row', 3, '8-12', 120],            // Back
+                ['Overhead Press', 3, '8-10', 90],          // Shoulders
+                ['Romanian Deadlift', 3, '10-12', 120],     // Hamstrings/Lower Back
+                ['Pull-ups', 3, '6-10', 120],               // Back/Biceps
+                ['Dumbbell Flyes', 3, '12-15', 60],         // Chest
+                ['Lateral Raises', 3, '12-15', 60],         // Shoulders
+                ['Plank', 3, '30-60s', 60],                 // Core
+            ];
+            
+            $this->addExercisesToDay($dayId, $exercises);
+        }
+    }
+    
+    /**
+     * Populate Push Pull Legs Split (6 days)
+     */
+    private function populatePushPullLegsSplit($splitId)
+    {
+        // Push Day 1
+        $pushDay1 = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Push Day',
+            'day_of_week' => 1,
+            'is_rest_day' => false,
+            'display_order' => 1,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($pushDay1, [
+            ['Barbell Bench Press', 4, '8-12', 120],
+            ['Incline Dumbbell Press', 3, '10-12', 90],
+            ['Overhead Press', 4, '8-10', 120],
+            ['Lateral Raises', 3, '12-15', 60],
+            ['Tricep Dips', 3, '8-12', 90],
+            ['Cable Tricep Pushdown', 3, '12-15', 60],
+        ]);
+        
+        // Pull Day
+        $pullDay = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Pull Day',
+            'day_of_week' => 2,
+            'is_rest_day' => false,
+            'display_order' => 2,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($pullDay, [
+            ['Deadlift', 4, '5-8', 180],
+            ['Pull-ups', 3, '8-12', 120],
+            ['Barbell Row', 3, '8-12', 120],
+            ['Lat Pulldown', 3, '10-12', 90],
+            ['Face Pulls', 3, '15-20', 60],
+            ['Barbell Curl', 3, '10-12', 60],
+            ['Hammer Curls', 3, '10-12', 60],
+        ]);
+        
+        // Leg Day
+        $legDay = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Leg Day',
+            'day_of_week' => 3,
+            'is_rest_day' => false,
+            'display_order' => 3,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($legDay, [
+            ['Barbell Squat', 4, '8-12', 180],
+            ['Romanian Deadlift', 3, '10-12', 120],
+            ['Leg Press', 3, '12-15', 90],
+            ['Leg Curl', 3, '12-15', 60],
+            ['Leg Extension', 3, '12-15', 60],
+            ['Calf Raises', 4, '15-20', 60],
+        ]);
+        
+        // Repeat for days 4-6 (Push, Pull, Legs again)
+        $pushDay2 = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Push Day',
+            'day_of_week' => 4,
+            'is_rest_day' => false,
+            'display_order' => 4,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        $this->addExercisesToDay($pushDay2, [
+            ['Incline Bench Press', 4, '8-10', 120],
+            ['Dumbbell Bench Press', 3, '10-12', 90],
+            ['Dumbbell Shoulder Press', 4, '8-12', 90],
+            ['Cable Crossover', 3, '12-15', 60],
+            ['Lateral Raises', 3, '12-15', 60],
+            ['Overhead Tricep Extension', 3, '12-15', 60],
+        ]);
+    }
+    
+    /**
+     * Populate Bro Split (5 days)
+     */
+    private function populateBroSplit($splitId)
+    {
+        // Chest Day
+        $chestDay = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Chest Day',
+            'day_of_week' => 1,
+            'is_rest_day' => false,
+            'display_order' => 1,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($chestDay, [
+            ['Barbell Bench Press', 4, '8-12', 120],
+            ['Incline Dumbbell Press', 4, '10-12', 90],
+            ['Decline Bench Press', 3, '10-12', 90],
+            ['Dumbbell Flyes', 3, '12-15', 60],
+            ['Cable Crossover', 3, '12-15', 60],
+            ['Push-ups', 3, 'To Failure', 60],
+        ]);
+        
+        // Back Day
+        $backDay = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Back Day',
+            'day_of_week' => 2,
+            'is_rest_day' => false,
+            'display_order' => 2,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($backDay, [
+            ['Deadlift', 4, '5-8', 180],
+            ['Pull-ups', 4, '8-12', 120],
+            ['Barbell Row', 4, '8-12', 120],
+            ['Lat Pulldown', 3, '10-12', 90],
+            ['Seated Cable Row', 3, '10-12', 90],
+            ['Face Pulls', 3, '15-20', 60],
+        ]);
+        
+        // Shoulder Day
+        $shoulderDay = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Shoulder Day',
+            'day_of_week' => 3,
+            'is_rest_day' => false,
+            'display_order' => 3,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($shoulderDay, [
+            ['Overhead Press', 4, '8-10', 120],
+            ['Dumbbell Shoulder Press', 3, '10-12', 90],
+            ['Lateral Raises', 4, '12-15', 60],
+            ['Front Raises', 3, '12-15', 60],
+            ['Rear Delt Flyes', 3, '12-15', 60],
+            ['Shrugs', 3, '12-15', 60],
+        ]);
+        
+        // Arms Day
+        $armsDay = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Arms Day',
+            'day_of_week' => 4,
+            'is_rest_day' => false,
+            'display_order' => 4,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($armsDay, [
+            ['Barbell Curl', 4, '10-12', 90],
+            ['Hammer Curls', 3, '10-12', 60],
+            ['Preacher Curls', 3, '10-12', 60],
+            ['Tricep Dips', 4, '8-12', 90],
+            ['Skull Crushers', 3, '10-12', 90],
+            ['Cable Tricep Pushdown', 3, '12-15', 60],
+        ]);
+        
+        // Leg Day
+        $legDay = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Leg Day',
+            'day_of_week' => 5,
+            'is_rest_day' => false,
+            'display_order' => 5,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($legDay, [
+            ['Barbell Squat', 4, '8-12', 180],
+            ['Romanian Deadlift', 4, '10-12', 120],
+            ['Leg Press', 3, '12-15', 90],
+            ['Leg Curl', 4, '12-15', 60],
+            ['Leg Extension', 4, '12-15', 60],
+            ['Calf Raises', 4, '15-20', 60],
+        ]);
+    }
+    
+    /**
+     * Populate Upper Lower Split (4 days)
+     */
+    private function populateUpperLowerSplit($splitId)
+    {
+        // Upper A
+        $upperA = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Upper Body A',
+            'day_of_week' => 1,
+            'is_rest_day' => false,
+            'display_order' => 1,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($upperA, [
+            ['Barbell Bench Press', 4, '8-10', 120],
+            ['Barbell Row', 4, '8-10', 120],
+            ['Overhead Press', 3, '8-12', 90],
+            ['Pull-ups', 3, '8-12', 90],
+            ['Tricep Dips', 3, '10-12', 60],
+            ['Barbell Curl', 3, '10-12', 60],
+        ]);
+        
+        // Lower A
+        $lowerA = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Lower Body A',
+            'day_of_week' => 2,
+            'is_rest_day' => false,
+            'display_order' => 2,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($lowerA, [
+            ['Barbell Squat', 4, '8-12', 180],
+            ['Romanian Deadlift', 3, '10-12', 120],
+            ['Leg Press', 3, '12-15', 90],
+            ['Leg Curl', 3, '12-15', 60],
+            ['Calf Raises', 4, '15-20', 60],
+            ['Plank', 3, '30-60s', 60],
+        ]);
+        
+        // Upper B
+        $upperB = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Upper Body B',
+            'day_of_week' => 4,
+            'is_rest_day' => false,
+            'display_order' => 3,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($upperB, [
+            ['Incline Bench Press', 4, '8-10', 120],
+            ['Lat Pulldown', 4, '10-12', 90],
+            ['Dumbbell Shoulder Press', 3, '10-12', 90],
+            ['Seated Cable Row', 3, '10-12', 90],
+            ['Lateral Raises', 3, '12-15', 60],
+            ['Face Pulls', 3, '15-20', 60],
+        ]);
+        
+        // Lower B
+        $lowerB = Capsule::table('split_days')->insertGetId([
+            'split_id' => $splitId,
+            'day_name' => 'Lower Body B',
+            'day_of_week' => 5,
+            'is_rest_day' => false,
+            'display_order' => 4,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+        
+        $this->addExercisesToDay($lowerB, [
+            ['Deadlift', 4, '5-8', 180],
+            ['Bulgarian Split Squat', 3, '10-12', 90],
+            ['Leg Extension', 3, '12-15', 60],
+            ['Leg Curl', 3, '12-15', 60],
+            ['Calf Raises', 4, '15-20', 60],
+            ['Hanging Leg Raises', 3, '10-15', 60],
+        ]);
+    }
+    
+    /**
+     * Helper method to add exercises to a day
+     */
+    private function addExercisesToDay($dayId, $exercises)
+    {
+        foreach ($exercises as $index => $exercise) {
+            $exerciseId = Capsule::table('exercises')
+                ->where('name', $exercise[0])
+                ->value('id');
+            
+            if ($exerciseId) {
+                Capsule::table('split_day_exercises')->insert([
+                    'split_day_id' => $dayId,
+                    'exercise_id' => $exerciseId,
+                    'target_sets' => $exercise[1],
+                    'target_reps' => $exercise[2],
+                    'target_rest_seconds' => $exercise[3],
+                    'display_order' => $index + 1,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
+        }
     }
     
     /**

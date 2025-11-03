@@ -44,6 +44,14 @@ require_once "../classes/SessionManager.php";
                 <ul class="navbar-nav align-items-center gap-lg-4">
                     <li class="nav-item"><a class="nav-link" href="../pages/home.php">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/track.php">Tracking</a></li>
+                    <?php if (SessionManager::isLoggedIn()): ?>
+                    <li class="nav-item"><a class="nav-link" href="../pages/myWorkouts.php">
+                        <i class="bi bi-calendar-check"></i> My Workouts
+                    </a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/workoutSplits.php">
+                        <i class="bi bi-calendar-week"></i> My Splits
+                    </a></li>
+                    <?php endif; ?>
                     <li class="nav-item"><a class="nav-link" href="../pages/shop.php">Shop</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/contact.php">Contact</a></li>
