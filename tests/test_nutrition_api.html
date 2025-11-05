@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Nutritionix API</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-white">
+    <div class="container py-5">
+        <h1 class="mb-4">Test Nutritionix API Integration</h1>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-secondary">
+                    <div class="card-body">
+                        <h3>Step 1: Test Configuration</h3>
+                        <button id="testConfig" class="btn btn-info">Test Config</button>
+                        <div id="configResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card bg-secondary">
+                    <div class="card-body">
+                        <h3>Step 2: Test Direct API</h3>
+                        <form id="directApiForm">
+                            <div class="mb-3">
+                                <label class="form-label">Food Query</label>
+                                <input type="text" class="form-control" name="query" value="1 cup of rice" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Test Direct API</button>
+                        </form>
+                        <div id="directApiResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card bg-secondary">
+                    <div class="card-body">
+                        <h3>Step 3: Test Full Integration</h3>
+                        <p class="text-warning small">Requires login & database tables</p>
+                        <form id="foodForm">
+                            <div class="mb-3">
+                                <label class="form-label">Food Query</label>
+                                <input type="text" class="form-control" name="query" value="1 cup of rice" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Log Food</button>
+                        </form>
+                        <div id="foodResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // Test config
+    document.getElementById('testConfig').addEventListener('click', async () => {
+        const result = document.getElementById('configResult');
+        result.innerHTML = '<p class="text-info">Loading...</p>';
+        
+        try {
+            const response = await fetch('../handlers/testConfig.php');
+            const text = await response.text();
+            
+            try {
+                const data = JSON.parse(text);
+                result.innerHTML = `<pre class="bg-dark p-3 text-white">${JSON.stringify(data, null, 2)}</pre>`;
+            } catch {
+                result.innerHTML = `<div class="alert alert-danger">Invalid JSON response:<pre>${text}</pre></div>`;
+            }
+        } catch (error) {
+            result.innerHTML = `<div class="alert alert-danger">Request failed: ${error.message}</div>`;
+        }
+    });
+    
+    // Test direct API
+    document.getElementById('directApiForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const query = formData.get('query');
+        const result = document.getElementById('directApiResult');
+        result.innerHTML = '<p class="text-info">Loading...</p>';
+        
+        try {
+            const response = await fetch('../handlers/testDirectAPI.php?query=' + encodeURIComponent(query));
+            const text = await response.text();
+            
+            try {
+                const data = JSON.parse(text);
+                if (data.success) {
+                    result.innerHTML = `
+                        <div class="alert alert-success">
+                            <h5>${data.food.name}</h5>
+                            <p>Calories: ${data.food.calories} kcal</p>
+                            <p>Protein: ${data.food.protein}g | Carbs: ${data.food.carbs}g | Fat: ${data.food.fat}g</p>
+                        </div>
+                        <details><summary>Raw API Response</summary><pre class="bg-dark p-2 text-white mt-2">${JSON.stringify(data.raw_response, null, 2)}</pre></details>
+                    `;
+                } else {
+                    result.innerHTML = `<div class="alert alert-danger"><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+            } catch {
+                result.innerHTML = `<div class="alert alert-danger">Invalid JSON:<pre>${text}</pre></div>`;
+            }
+        } catch (error) {
+            result.innerHTML = `<div class="alert alert-danger">Request failed: ${error.message}</div>`;
+        }
+    });
+    
+    // Test full integration
+    document.getElementById('foodForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const result = document.getElementById('foodResult');
+        result.innerHTML = '<p class="text-info">Loading...</p>';
+        
+        try {
+            const response = await fetch('../handlers/logFood.php', {
+                method: 'POST',
+                body: formData
+            });
+            const text = await response.text();
+            
+            try {
+                const data = JSON.parse(text);
+                if (data.success) {
+                    result.innerHTML = `
+                        <div class="alert alert-success">
+                            <h5>${data.food.food_name}</h5>
+                            <p>Calories: ${data.food.calories} kcal</p>
+                            <p>Protein: ${data.food.protein_g}g | Carbs: ${data.food.carbs_g}g | Fat: ${data.food.fat_g}g</p>
+                            <p>Serving: ${data.food.serving_size}</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+                }
+            } catch {
+                result.innerHTML = `<div class="alert alert-danger">Invalid JSON:<pre>${text}</pre></div>`;
+            }
+        } catch (error) {
+            result.innerHTML = `<div class="alert alert-danger">Request failed: ${error.message}</div>`;
+        }
+    });
+    
+    document.getElementById('exerciseForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const result = document.getElementById('exerciseResult');
+        result.innerHTML = '<p class="text-info">Loading...</p>';
+        
+        try {
+            const response = await fetch('../handlers/logExercise.php', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                result.innerHTML = `
+                    <div class="alert alert-success">
+                        <h5>${data.exercise.exercise_name}</h5>
+                        <p>Duration: ${data.exercise.duration_minutes} minutes</p>
+                        <p>Calories Burned: ${data.exercise.calories_burned} kcal</p>
+                        <p>MET Value: ${data.exercise.met_value}</p>
+                    </div>
+                `;
+            } else {
+                result.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+            }
+        } catch (error) {
+            result.innerHTML = `<div class="alert alert-danger">Request failed: ${error.message}</div>`;
+        }
+    });
+    </script>
+</body>
+</html>

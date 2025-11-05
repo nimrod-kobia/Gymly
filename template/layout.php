@@ -43,15 +43,23 @@ require_once "../classes/SessionManager.php";
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav align-items-center gap-lg-4">
                     <li class="nav-item"><a class="nav-link" href="../pages/home.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="../pages/track.php">Tracking</a></li>
+                    
                     <?php if (SessionManager::isLoggedIn()): ?>
-                    <li class="nav-item"><a class="nav-link" href="../pages/myWorkouts.php">
-                        <i class="bi bi-calendar-check"></i> My Workouts
-                    </a></li>
-                    <li class="nav-item"><a class="nav-link" href="../pages/workoutSplits.php">
-                        <i class="bi bi-calendar-week"></i> My Splits
-                    </a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="trackingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Tracking
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="trackingDropdown">
+                            <li><a class="dropdown-item" href="../pages/nutrition.php">🥗 Nutrition</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="../pages/myWorkouts.php">💪 My Workouts</a></li>
+                            <li><a class="dropdown-item" href="../pages/workoutSplits.php">📋 My Splits</a></li>
+                        </ul>
+                    </li>
+                    <?php else: ?>
+                    <li class="nav-item"><a class="nav-link" href="../pages/track.php">Tracking</a></li>
                     <?php endif; ?>
+
                     <li class="nav-item"><a class="nav-link" href="../pages/shop.php">Shop</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/contact.php">Contact</a></li>

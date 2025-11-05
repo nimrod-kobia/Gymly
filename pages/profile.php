@@ -154,6 +154,116 @@ include '../template/layout.php';
         </div>
       </div>
 
+      <!-- Nutrition Stats -->
+      <?php
+      // Fetch today's nutrition summary
+      $today = date('Y-m-d');
+      $stmt = $pdo->prepare("
+          SELECT 
+              calories_consumed,
+              protein_g,
+              carbs_g,
+              fat_g,
+              meals_count
+          FROM user_daily_summary
+          WHERE user_id = ? AND summary_date = ?
+      ");
+      $stmt->execute([$userId, $today]);
+      $nutrition = $stmt->fetch(PDO::FETCH_ASSOC);
+      
+      // Fetch last 7 days average
+      $stmt = $pdo->prepare("
+          SELECT 
+              AVG(calories_consumed) as avg_calories,
+              AVG(protein_g) as avg_protein,
+              COUNT(*) as days_tracked
+          FROM user_daily_summary
+          WHERE user_id = ? AND summary_date >= CURRENT_DATE - INTERVAL '7 days'
+      ");
+      $stmt->execute([$userId]);
+      $weekly = $stmt->fetch(PDO::FETCH_ASSOC);
+      ?>
+      
+      <div class="card bg-dark border-secondary mb-4">
+        <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 text-white"><i class="bi bi-activity"></i> Nutrition Stats</h5>
+          <a href="nutrition.php" class="btn btn-sm btn-outline-primary">Track Food</a>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <h6 class="text-muted mb-3">Today's Intake</h6>
+              <div class="row g-2">
+                <div class="col-6">
+                  <div class="card bg-secondary text-center">
+                    <div class="card-body py-2">
+                      <h5 class="mb-0 text-white"><?php echo $nutrition ? number_format($nutrition['calories_consumed']) : 0; ?></h5>
+                      <small class="text-muted">Calories</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="card bg-secondary text-center">
+                    <div class="card-body py-2">
+                      <h5 class="mb-0 text-white"><?php echo $nutrition ? round($nutrition['protein_g'], 1) : 0; ?>g</h5>
+                      <small class="text-muted">Protein</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="card bg-secondary text-center">
+                    <div class="card-body py-2">
+                      <h5 class="mb-0 text-white"><?php echo $nutrition ? round($nutrition['carbs_g'], 1) : 0; ?>g</h5>
+                      <small class="text-muted">Carbs</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="card bg-secondary text-center">
+                    <div class="card-body py-2">
+                      <h5 class="mb-0 text-white"><?php echo $nutrition ? round($nutrition['fat_g'], 1) : 0; ?>g</h5>
+                      <small class="text-muted">Fat</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <h6 class="text-muted mb-3">7-Day Average</h6>
+              <div class="row g-2">
+                <div class="col-12">
+                  <div class="card bg-secondary">
+                    <div class="card-body py-2">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <small class="text-muted d-block">Average Daily Calories</small>
+                          <h5 class="mb-0 text-white"><?php echo $weekly ? number_format(round($weekly['avg_calories'])) : 0; ?></h5>
+                        </div>
+                        <i class="bi bi-bar-chart fs-3 text-primary"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card bg-secondary">
+                    <div class="card-body py-2">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <small class="text-muted d-block">Days Tracked (Last 7)</small>
+                          <h5 class="mb-0 text-white"><?php echo $weekly ? $weekly['days_tracked'] : 0; ?> / 7</h5>
+                        </div>
+                        <i class="bi bi-calendar-check fs-3 text-success"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="row g-4">
         <div class="col-lg-5">
           <div class="card bg-dark border-secondary">

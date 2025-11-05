@@ -156,31 +156,117 @@ include '../template/layout.php';
             <h3 class="fw-bold mb-4 text-gradient">Recent Activity</h3>
 
             <?php
-            /**
-             * TODO (Backend group members):
-             * Fetch recent user actions from `activity_logs` table
-             * Expected columns: id, user_id, action, timestamp, category
-             * Display 3–5 most recent activities
-             */
+            // Fetch recent nutrition logs
+            $userId = SessionManager::getUserId();
+            $db = (new Database())->connect();
+            
+            // Get recent meals (last 5)
+            $mealsStmt = $db->prepare("
+                SELECT food_name, calories, protein_g, carbs_g, fat_g, meal_type, logged_at
+                FROM user_meals
+                WHERE user_id = ?
+                ORDER BY logged_at DESC
+                LIMIT 5
+            ");
+            $mealsStmt->execute([$userId]);
+            $recentMeals = $mealsStmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Get recent workout sessions (if table exists)
+            $recentWorkouts = [];
+            try {
+                $workoutsStmt = $db->prepare("
+                    SELECT ws.id, ws.started_at, ws.completed_at, sd.name as workout_name
+                    FROM workout_sessions ws
+                    JOIN split_days sd ON ws.split_day_id = sd.id
+                    WHERE ws.user_id = ?
+                    ORDER BY ws.started_at DESC
+                    LIMIT 3
+                ");
+                $workoutsStmt->execute([$userId]);
+                $recentWorkouts = $workoutsStmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // Table might not exist yet
+            }
+            
+            $hasActivity = !empty($recentMeals) || !empty($recentWorkouts);
             ?>
-            <div class="card bg-dark border-secondary rounded-4 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <i class="bi bi-check-circle text-success fs-2 me-3"></i>
-                        <div>
-                            <h5 class="text-white mb-1">Morning Yoga Session</h5>
-                            <p class="text-light mb-0">Completed today at 8:30 AM</p>
-                        </div>
+
+            <?php if ($hasActivity): ?>
+                <div class="card bg-dark border-secondary rounded-4 shadow-sm">
+                    <div class="card-body">
+                        <?php foreach ($recentWorkouts as $workout): ?>
+                            <div class="d-flex align-items-center mb-3 pb-3 border-bottom border-secondary">
+                                <i class="bi bi-lightning-charge text-warning fs-2 me-3"></i>
+                                <div class="flex-grow-1">
+                                    <h5 class="text-white mb-1">
+                                        <?php echo htmlspecialchars($workout['workout_name']); ?>
+                                    </h5>
+                                    <p class="text-light mb-0">
+                                        <small>
+                                            <?php 
+                                            $time = new DateTime($workout['started_at']);
+                                            echo $time->format('M j') . ' at ' . $time->format('g:i A');
+                                            if ($workout['completed_at']) {
+                                                echo ' <span class="badge bg-success">Completed</span>';
+                                            }
+                                            ?>
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                        
+                        <?php foreach ($recentMeals as $index => $meal): ?>
+                            <div class="d-flex align-items-center <?php echo $index < count($recentMeals) - 1 ? 'mb-3 pb-3 border-bottom border-secondary' : ''; ?>">
+                                <i class="bi bi-egg-fried text-success fs-2 me-3"></i>
+                                <div class="flex-grow-1">
+                                    <h5 class="text-white mb-1">
+                                        <?php echo htmlspecialchars($meal['food_name']); ?>
+                                        <span class="badge bg-primary ms-2"><?php echo ucfirst($meal['meal_type']); ?></span>
+                                    </h5>
+                                    <p class="text-light mb-0">
+                                        <small>
+                                            <?php 
+                                            $time = new DateTime($meal['logged_at']);
+                                            echo $time->format('M j') . ' at ' . $time->format('g:i A');
+                                            ?>
+                                            • <?php echo $meal['calories']; ?> cal
+                                            • P: <?php echo round($meal['protein_g'], 1); ?>g
+                                            • C: <?php echo round($meal['carbs_g'], 1); ?>g
+                                            • F: <?php echo round($meal['fat_g'], 1); ?>g
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-lightning-charge text-warning fs-2 me-3"></i>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="nutrition.php" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-egg-fried me-2"></i>Track Food
+                    </a>
+                    <a href="track.php" class="btn btn-outline-primary">
+                        <i class="bi bi-lightning-charge me-2"></i>Track Workout
+                    </a>
+                </div>
+            <?php else: ?>
+                <div class="card bg-dark border-secondary rounded-4 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-activity text-muted fs-1 mb-3 d-block"></i>
+                        <h5 class="text-white mb-2">No Recent Activity</h5>
+                        <p class="text-light mb-4">Start tracking your nutrition and workouts to see your activity here!</p>
                         <div>
-                            <h5 class="text-white mb-1">Cardio Challenge</h5>
-                            <p class="text-light mb-0">New challenge unlocked</p>
+                            <a href="nutrition.php" class="btn btn-primary me-2">
+                                <i class="bi bi-egg-fried me-2"></i>Track Food
+                            </a>
+                            <a href="track.php" class="btn btn-outline-primary">
+                                <i class="bi bi-lightning-charge me-2"></i>Track Workout
+                            </a>
                         </div>
                     </div>
                 </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

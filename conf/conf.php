@@ -13,6 +13,11 @@ define('DB_PORT', $_ENV['PGPORT'] ?? '5432');
 define('DB_SSL_MODE', $_ENV['PGSSLMODE'] ?? 'require');
 define('DB_CHANNEL_BINDING', $_ENV['PGCHANNELBINDING'] ?? 'require');
 
+// Nutritionix API configuration
+define('NUTRITIONIX_APP_ID', 'a1516028');
+define('NUTRITIONIX_APP_KEY', 'a85ab2f12f36968f9b637d300f308aa9');
+define('NUTRITIONIX_API_URL', 'https://trackapi.nutritionix.com/v2');
+
 // Session configuration - SECURITY FOCUSED
 session_set_cookie_params([
     'lifetime' => 7200, // 2 hours
