@@ -16,7 +16,7 @@ $capsule = new Capsule;
 
 $capsule->addConnection([
     'driver'    => 'pgsql',
-    'host'      => $_ENV['PGHOST'] ?? 'localhost',
+    'host'      => $_ENV['PGPOOLHOST'] ?? $_ENV['PGHOST'] ?? 'localhost',
     'port'      => $_ENV['PGPORT'] ?? '5432',
     'database'  => $_ENV['PGDATABASE'] ?? 'gymly',
     'username'  => $_ENV['PGUSER'] ?? 'user',
@@ -25,6 +25,9 @@ $capsule->addConnection([
     'prefix'    => '',
     'schema'    => 'public',
     'sslmode'   => $_ENV['PGSSLMODE'] ?? 'prefer',
+    'options'   => [
+        PDO::ATTR_TIMEOUT => (int)($_ENV['DB_CONN_TIMEOUT'] ?? 5),
+    ],
 ]);
 
 // Make this Capsule instance available globally via static methods
