@@ -50,10 +50,10 @@ require_once "../classes/SessionManager.php";
                             Tracking
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="trackingDropdown">
-                            <li><a class="dropdown-item" href="../pages/nutrition.php">🥗 Nutrition</a></li>
+                            <li><a class="dropdown-item" href="../pages/nutrition.php">Nutrition</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="../pages/myWorkouts.php">💪 My Workouts</a></li>
-                            <li><a class="dropdown-item" href="../pages/workoutSplits.php">📋 My Splits</a></li>
+                            <li><a class="dropdown-item" href="../pages/myWorkouts.php">My Workouts</a></li>
+                            <li><a class="dropdown-item" href="../pages/workoutSplits.php">My Splits</a></li>
                         </ul>
                     </li>
                     <?php else: ?>

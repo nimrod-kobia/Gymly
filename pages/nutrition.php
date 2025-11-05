@@ -21,7 +21,7 @@ include '../template/layout.php';
 <!-- Hero Section -->
 <div class="hero-section text-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
     <div class="container">
-        <h1 class="display-4 fw-bold mb-3 text-white">🥗 Nutrition Tracking</h1>
+        <h1 class="display-4 fw-bold mb-3 text-white">Nutrition Tracking</h1>
         <p class="lead text-white">Track your meals and monitor your daily calorie intake</p>
     </div>
 </div>
@@ -38,33 +38,43 @@ include '../template/layout.php';
                     <form id="logFoodForm">
                         <div class="mb-3">
                             <label class="form-label text-white">What did you eat?</label>
-                            <input 
-                                type="text" 
-                                class="form-control" 
-                                name="query" 
-                                id="foodQuery"
-                                placeholder="e.g., 1 cup of rice, chicken breast 150g"
-                                autocomplete="off"
-                                required
-                            >
-                            <div id="foodSuggestions" class="list-group mt-1" style="position: absolute; z-index: 1000; max-height: 300px; overflow-y: auto; display: none;"></div>
+                            <div style="position: relative;">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    name="query" 
+                                    id="foodQuery"
+                                    placeholder="e.g., chicken breast, rice, apple"
+                                    autocomplete="off"
+                                >
+                                <div id="foodSuggestions" class="list-group" style="position: absolute; z-index: 9999; width: 100%; background: #1a1a1a; border: 2px solid #0d6efd; max-height: 400px; overflow-y: auto; display: none;"></div>
+                            </div>
                             <small class="form-text text-muted">
-                                Use natural language (e.g., "2 eggs and toast")
+                                Search and add foods one at a time
                             </small>
+                        </div>
+                        
+                        <!-- Foods Added to Current Meal -->
+                        <div id="mealItems" class="mb-3" style="display: none;">
+                            <label class="form-label text-white">Foods in this meal:</label>
+                            <div id="mealItemsList" class="list-group mb-2"></div>
+                            <div class="text-end">
+                                <small class="text-muted">Total: <span id="mealTotal">0</span> cal</small>
+                            </div>
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label text-white">Meal Type</label>
-                            <select class="form-select" name="meal_type">
-                                <option value="breakfast">🌅 Breakfast</option>
-                                <option value="lunch">☀️ Lunch</option>
-                                <option value="dinner">🌙 Dinner</option>
-                                <option value="snack" selected>🍎 Snack</option>
+                            <select class="form-select" name="meal_type" id="mealType">
+                                <option value="breakfast">Breakfast</option>
+                                <option value="lunch">Lunch</option>
+                                <option value="dinner">Dinner</option>
+                                <option value="snack" selected>Snack</option>
                             </select>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-check-circle"></i> Log Food
+                        <button type="submit" class="btn btn-primary w-100" id="logMealBtn" disabled>
+                            <i class="bi bi-check-circle"></i> Log Meal
                         </button>
                     </form>
                     
@@ -84,7 +94,7 @@ include '../template/layout.php';
                         <div class="col-6 col-md-3">
                             <div class="card bg-secondary text-center">
                                 <div class="card-body py-3">
-                                    <h5 class="mb-1">🔥</h5>
+                                    <h5 class="mb-1">Cal</h5>
                                     <h4 class="mb-0 text-white" id="caloriesCount">0</h4>
                                     <small class="text-muted">Calories</small>
                                 </div>
@@ -149,11 +159,6 @@ include '../template/layout.php';
     transform: translateX(5px);
 }
 
-.badge-meal {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-}
-
 #foodSuggestions {
     max-width: 100%;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
@@ -167,18 +172,98 @@ include '../template/layout.php';
 #foodSuggestions .list-group-item strong {
     color: #ffffff;
 }
+
+#foodSuggestions .list-group-item small {
+    color: #adb5bd !important;
+}
+
+.form-select option {
+    background-color: #212529;
+    color: #ffffff;
+}
 </style>
 
 <script>
-// Food autocomplete
+// Multiple foods per meal tracking
+let mealItems = [];
 let searchTimeout;
 const foodInput = document.getElementById('foodQuery');
 const suggestionsDiv = document.getElementById('foodSuggestions');
+const mealItemsDiv = document.getElementById('mealItems');
+const mealItemsList = document.getElementById('mealItemsList');
+const mealTotalSpan = document.getElementById('mealTotal');
+const logMealBtn = document.getElementById('logMealBtn');
 
+// Initialize suggestions div as hidden
+suggestionsDiv.style.display = 'none';
+
+// Update meal totals and display
+function updateMealDisplay() {
+    if (mealItems.length === 0) {
+        mealItemsDiv.style.display = 'none';
+        logMealBtn.disabled = true;
+        return;
+    }
+    
+    mealItemsDiv.style.display = 'block';
+    logMealBtn.disabled = false;
+    
+    const totalCalories = mealItems.reduce((sum, item) => sum + item.calories, 0);
+    mealTotalSpan.textContent = totalCalories;
+    
+    mealItemsList.innerHTML = mealItems.map((item, index) => `
+        <div class="list-group-item bg-secondary text-white d-flex justify-content-between align-items-center">
+            <div>
+                <strong>${item.food_name}</strong>
+                <br>
+                <small class="text-muted">
+                    ${item.serving_size} • ${item.calories} cal • 
+                    P: ${item.protein_g}g C: ${item.carbs_g}g F: ${item.fat_g}g
+                </small>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger" onclick="removeFood(${index})">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+// Remove food from meal
+window.removeFood = function(index) {
+    mealItems.splice(index, 1);
+    updateMealDisplay();
+}
+
+// Add food to meal
+async function addFoodToMeal(foodName, servingSize = '1 serving') {
+    try {
+        const response = await fetch('../handlers/getFoodNutrition.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ food_name: foodName, serving_size: servingSize })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            mealItems.push(data.nutrition);
+            updateMealDisplay();
+            foodInput.value = '';
+            document.getElementById('logResult').innerHTML = '';
+        } else {
+            document.getElementById('logResult').innerHTML = `
+                <div class="alert alert-warning">${data.message}</div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error adding food:', error);
+    }
+}
+
+// Food autocomplete - FASTER (100ms delay)
 foodInput.addEventListener('input', (e) => {
     const query = e.target.value.trim();
     
-    // Clear previous timeout
     clearTimeout(searchTimeout);
     
     if (query.length < 2) {
@@ -186,21 +271,25 @@ foodInput.addEventListener('input', (e) => {
         return;
     }
     
-    // Debounce search
+    // REDUCED from 300ms to 100ms for faster search
     searchTimeout = setTimeout(async () => {
         try {
+            // Show loading
+            suggestionsDiv.innerHTML = '<div class="list-group-item bg-dark text-white">Searching...</div>';
+            suggestionsDiv.style.display = 'block';
+            
             const response = await fetch(`../handlers/searchFood.php?query=${encodeURIComponent(query)}`);
             const data = await response.json();
             
             if (data.success && data.foods && data.foods.length > 0) {
                 suggestionsDiv.innerHTML = data.foods.map(food => `
                     <a href="#" class="list-group-item list-group-item-action bg-dark text-white border-secondary food-suggestion" 
-                       data-food="${food.food_name}">
+                       data-food="${food.food_name}" data-id="${food.food_id || ''}">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <strong>${food.food_name}</strong>
                                 <br>
-                                <small class="text-muted">Suggested: 1 serving, 1 cup, 100g</small>
+                                <small class="text-muted">Click to see serving options</small>
                             </div>
                             <i class="bi bi-plus-circle text-primary"></i>
                         </div>
@@ -208,59 +297,127 @@ foodInput.addEventListener('input', (e) => {
                 `).join('');
                 suggestionsDiv.style.display = 'block';
                 
-                // Add click handlers to suggestions
                 document.querySelectorAll('.food-suggestion').forEach(item => {
-                    item.addEventListener('click', (e) => {
+                    item.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const foodName = e.currentTarget.dataset.food;
+                        const foodId = e.currentTarget.dataset.id;
                         
-                        // Show quantity options
-                        const quantities = ['1 serving', '1 cup', '100g', '1 piece', '1 medium'];
-                        suggestionsDiv.innerHTML = `
-                            <div class="list-group-item bg-dark text-white border-secondary">
-                                <strong>Select quantity for ${foodName}:</strong>
-                            </div>
-                            ${quantities.map(qty => `
-                                <a href="#" class="list-group-item list-group-item-action bg-dark text-white border-secondary quantity-option"
-                                   data-quantity="${qty}" data-food="${foodName}">
-                                    <i class="bi bi-circle me-2"></i>${qty} of ${foodName}
-                                </a>
-                            `).join('')}
-                            <a href="#" class="list-group-item list-group-item-action bg-secondary text-white border-secondary" 
-                               id="customQuantity" data-food="${foodName}">
-                                <i class="bi bi-pencil me-2"></i>Enter custom quantity
-                            </a>
-                        `;
+                        suggestionsDiv.innerHTML = '<div class="list-group-item bg-dark text-white">Loading serving options...</div>';
+                        suggestionsDiv.style.display = 'block';
                         
-                        // Handle quantity selection
-                        document.querySelectorAll('.quantity-option').forEach(qtyItem => {
-                            qtyItem.addEventListener('click', (e) => {
-                                e.preventDefault();
-                                const quantity = e.currentTarget.dataset.quantity;
-                                const food = e.currentTarget.dataset.food;
-                                foodInput.value = `${quantity} of ${food}`;
-                                suggestionsDiv.style.display = 'none';
-                            });
-                        });
-                        
-                        // Handle custom quantity
-                        document.getElementById('customQuantity')?.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            const food = e.currentTarget.dataset.food;
-                            foodInput.value = food;
-                            suggestionsDiv.style.display = 'none';
-                            foodInput.focus();
-                        });
+                        if (foodId && foodId !== '') {
+                            try {
+                                const servingResponse = await fetch(`../handlers/getServingOptions.php?food_id=${foodId}&food_name=${encodeURIComponent(foodName)}`);
+                                const servingData = await servingResponse.json();
+                                
+                                if (servingData.success && servingData.servings && servingData.servings.length > 0) {
+                                    showServingOptions(foodName, servingData.servings);
+                                } else {
+                                    showDefaultServingOptions(foodName);
+                                }
+                            } catch (error) {
+                                console.error('Error fetching servings:', error);
+                                showDefaultServingOptions(foodName);
+                            }
+                        } else {
+                            showDefaultServingOptions(foodName);
+                        }
                     });
                 });
             } else {
-                suggestionsDiv.style.display = 'none';
+                suggestionsDiv.innerHTML = '<div class="list-group-item bg-dark text-white">No results found</div>';
+                setTimeout(() => {
+                    suggestionsDiv.style.display = 'none';
+                }, 2000);
             }
         } catch (error) {
             console.error('Search error:', error);
+            suggestionsDiv.innerHTML = '<div class="list-group-item bg-dark text-danger">Search failed</div>';
         }
-    }, 300);
+    }, 100);
 });
+
+function showServingOptions(foodName, servings) {
+    suggestionsDiv.innerHTML = `
+        <div class="list-group-item bg-primary text-white border-secondary">
+            <strong>📏 Select serving for ${foodName}:</strong>
+        </div>
+        ${servings.map((serving, idx) => `
+            <a href="#" class="list-group-item list-group-item-action bg-dark border-secondary serving-option"
+               data-food="${foodName}" data-index="${idx}" style="color: #ffffff !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${serving.description}</strong>
+                        <br>
+                        <small style="color: #aaa;">
+                            ${serving.calories} cal • P:${serving.protein}g C:${serving.carbs}g F:${serving.fat}g
+                        </small>
+                    </div>
+                    <i class="bi bi-check-circle text-success"></i>
+                </div>
+            </a>
+        `).join('')}
+    `;
+    
+    suggestionsDiv.style.display = 'block';
+    suggestionsDiv.style.maxHeight = '400px';
+    suggestionsDiv.style.overflowY = 'auto';
+    
+    window.currentServings = servings;
+    
+    document.querySelectorAll('.serving-option').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const foodName = e.currentTarget.dataset.food;
+            const servingIndex = e.currentTarget.dataset.index;
+            const serving = servings[servingIndex];
+            
+            mealItems.push({
+                food_name: foodName,
+                serving_size: serving.description,
+                calories: serving.calories,
+                protein_g: serving.protein,
+                carbs_g: serving.carbs,
+                fat_g: serving.fat
+            });
+            
+            updateMealDisplay();
+            suggestionsDiv.style.display = 'none';
+            foodInput.value = '';
+        });
+    });
+}
+
+function showDefaultServingOptions(foodName) {
+    const quantities = ['1 serving', '1 cup', '100g', '1 piece', '1 medium', '2 servings'];
+    suggestionsDiv.innerHTML = `
+        <div class="list-group-item bg-warning text-dark border-secondary">
+            <strong>📏 Select quantity for ${foodName}:</strong>
+            <br><small>Using default servings (nutrition will be estimated)</small>
+        </div>
+        ${quantities.map(qty => `
+            <a href="#" class="list-group-item list-group-item-action bg-dark border-secondary quantity-option"
+               data-quantity="${qty}" data-food="${foodName}" style="color: #ffffff !important;">
+                <i class="bi bi-circle me-2"></i><strong>${qty}</strong>
+            </a>
+        `).join('')}
+    `;
+    
+    suggestionsDiv.style.display = 'block';
+    suggestionsDiv.style.maxHeight = '400px';
+    suggestionsDiv.style.overflowY = 'auto';
+    
+    document.querySelectorAll('.quantity-option').forEach(qtyItem => {
+        qtyItem.addEventListener('click', (e) => {
+            e.preventDefault();
+            const quantity = e.currentTarget.dataset.quantity;
+            const food = e.currentTarget.dataset.food;
+            addFoodToMeal(food, quantity);
+            suggestionsDiv.style.display = 'none';
+        });
+    });
+}
 
 // Hide suggestions when clicking outside
 document.addEventListener('click', (e) => {
@@ -269,55 +426,73 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Load summary on page load
-document.addEventListener('DOMContentLoaded', () => {
-    loadDailySummary();
-});
-
-// Log food form submission
+// Log meal (all foods added)
 document.getElementById('logFoodForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    
+    if (mealItems.length === 0) {
+        alert('Please add at least one food to the meal');
+        return;
+    }
+    
     const result = document.getElementById('logResult');
-    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const submitBtn = logMealBtn;
+    const mealType = document.getElementById('mealType').value;
     
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging...';
-    result.innerHTML = '<div class="alert alert-info">Looking up food nutrition...</div>';
+    result.innerHTML = '<div class="alert alert-info">Logging meal...</div>';
     
     try {
-        const response = await fetch('../handlers/logFood.php', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const text = await response.text();
-        let data;
-        
-        try {
-            data = JSON.parse(text);
-        } catch {
-            result.innerHTML = `<div class="alert alert-danger">Server error. Please try again.<pre class="small">${text}</pre></div>`;
-            return;
+        // Log each food item
+        for (const item of mealItems) {
+            const response = await fetch('../handlers/logFood.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    food_name: item.food_name,
+                    calories: item.calories,
+                    protein_g: item.protein_g,
+                    carbs_g: item.carbs_g,
+                    fat_g: item.fat_g,
+                    serving_size: item.serving_size,
+                    meal_type: mealType
+                })
+            });
+            
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to log food');
+            }
         }
         
-        if (data.success) {
-            result.innerHTML = `
-                <div class="alert alert-success">
-                    <strong>✓ Logged!</strong> ${data.food_name} - ${data.calories} cal
-                </div>
-            `;
-            e.target.reset();
-            loadDailySummary(); // Refresh summary
-        } else {
-            result.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-        }
+        const totalCal = mealItems.reduce((sum, item) => sum + item.calories, 0);
+        result.innerHTML = `
+            <div class="alert alert-success">
+                <strong>Logged!</strong> ${mealItems.length} items - ${totalCal} cal total
+            </div>
+        `;
+        
+        // Reset meal
+        mealItems = [];
+        updateMealDisplay();
+        loadDailySummary();
+        
     } catch (error) {
-        result.innerHTML = `<div class="alert alert-danger">Request failed: ${error.message}</div>`;
+        result.innerHTML = `
+            <div class="alert alert-danger">
+                <strong>Error:</strong> ${error.message}
+            </div>
+        `;
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Log Food';
+        submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Log Meal';
     }
+});
+
+// Load summary on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadDailySummary();
 });
 
 // Load daily summary

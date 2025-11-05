@@ -27,9 +27,9 @@ class CreateFoodTrackingOnly
                 $table->index('cached_at');
             });
             
-            echo "    ✓ Created food_cache table\n";
+            echo "    [OK] Created food_cache table\n";
         } else {
-            echo "    ⏭️  food_cache table already exists, skipping\n";
+            echo "    [SKIP] food_cache table already exists, skipping\n";
         }
 
         // User meal logs
@@ -53,9 +53,9 @@ class CreateFoodTrackingOnly
                 $table->index(['user_id', 'logged_at']);
             });
             
-            echo "     Created user_meals table\n";
+            echo "    [OK] Created user_meals table\n";
         } else {
-            echo "    ⏭user_meals table already exists, skipping\n";
+            echo "    [SKIP] user_meals table already exists, skipping\n";
         }
 
         // User daily nutrition summary (for quick dashboard stats)
@@ -81,9 +81,9 @@ class CreateFoodTrackingOnly
                 $table->index(['user_id', 'summary_date']);
             });
             
-            echo "    ✓ Created user_daily_summary table\n";
+            echo "    [OK] Created user_daily_summary table\n";
         } else {
-            echo "    ⏭️  user_daily_summary table already exists, skipping\n";
+            echo "    [SKIP] user_daily_summary table already exists, skipping\n";
         }
     }
 
@@ -93,13 +93,13 @@ class CreateFoodTrackingOnly
     public function down()
     {
         Capsule::schema()->dropIfExists('user_daily_summary');
-        echo "    ✓ Dropped user_daily_summary table\n";
+        echo "    [OK] Dropped user_daily_summary table\n";
         
         Capsule::schema()->dropIfExists('user_meals');
-        echo "    ✓ Dropped user_meals table\n";
+        echo "    [OK] Dropped user_meals table\n";
         
         Capsule::schema()->dropIfExists('food_cache');
-        echo "    ✓ Dropped food_cache table\n";
+        echo "    [OK] Dropped food_cache table\n";
     }
 }
 

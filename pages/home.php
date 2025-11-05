@@ -17,13 +17,13 @@ include '../template/layout.php';
 <!-- HERO SECTION -->
 <section class="hero-section position-relative text-white">
     <!-- Background video (autoplay muted for UX) -->
-    <video autoplay muted loop playsinline id="heroVideo" class="hero-video">
+    <video autoplay muted loop playsinline id="heroVideo" class="hero-video" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
         <source src="../assets/videos/gym_video.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
     <!-- Static fallback image for when video fails or ends -->
-    <img src="../assets/images/gym_image.jpeg" alt="Gym Background" id="fallbackImage" class="hero-image d-none">
+    <img src="../assets/images/gym_image.jpeg" alt="Gym Background" id="fallbackImage" class="hero-image d-none" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
 
     <div class="container position-relative z-1 text-start">
         <div class="row align-items-center min-vh-100">
@@ -276,18 +276,30 @@ include '../template/layout.php';
 
 <!--  INLINE STYLES (Hero + Text Gradient)  -->
 <style>
-.hero-video, .hero-image {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
-}
 .hero-section {
     position: relative;
     overflow: hidden;
+    min-height: 100vh;
+    max-height: 100vh;
+    height: 100vh;
+    width: 100%;
 }
+
+.hero-video, .hero-image {
+    position: absolute;
+    top: 0; 
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    transition: none !important;
+    transform: none !important;
+}
+
 .text-gradient {
     background: linear-gradient(90deg, #0D6EFD, #10B981);
     background-clip: text;
