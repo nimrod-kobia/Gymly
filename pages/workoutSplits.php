@@ -193,68 +193,115 @@ include '../template/layout.php';
 <!-- Custom JavaScript -->
 <script>
 let currentSplitId = null;
+let activeSplitData = null;
 
 $(document).ready(function() {
-    loadActiveSplit();
-    loadPresetSplits();
-    loadCustomSplits();
+    loadSplitOverview();
 });
 
-// Load user's active split
-function loadActiveSplit() {
-    $.ajax({
-        url: '../handlers/getActiveSplit.php',
-        method: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            if (response.success && response.split) {
-                $('#activeSplitSection').show();
-                $('#activeSplitName').text(response.split.split_name);
-                $('#activeSplitDescription').text(response.split.description || 'No description');
-                currentSplitId = response.split.id;
-            }
-        }
-    });
-}
+function loadSplitOverview(onComplete) {
+    showLoadingState();
 
-// Load preset splits
-function loadPresetSplits() {
     $.ajax({
-        url: '../handlers/fetchWorkoutSplits.php?type=preset',
+        url: '../handlers/fetchSplitOverview.php',
         method: 'GET',
         dataType: 'json',
+        timeout: 45000,
         success: function(response) {
-            if (response.success && response.splits.length > 0) {
-                renderSplits(response.splits, 'presetSplitsContainer', 'preset');
-            } else {
-                $('#presetSplitsContainer').html(
-                    '<div class="col-12"><p class="text-muted">No preset splits available.</p></div>'
-                );
+            if (!response.success) {
+                handleOverviewError(response.message || 'Failed to load splits');
+                return;
             }
+
+            const data = response.data || {};
+            const activeSplit = data.active_split || data.activeSplit || null;
+            const presetSplits = data.preset_splits || data.presetSplits || data.presets || [];
+            const customSplits = data.custom_splits || data.customSplits || data.custom || [];
+
+            updateActiveSplit(activeSplit);
+            renderPresetSplits(presetSplits);
+            renderCustomSplits(customSplits);
         },
-        error: function() {
-            $('#presetSplitsContainer').html(
-                '<div class="col-12"><p class="text-danger">Error loading preset splits.</p></div>'
-            );
-        }
-    });
-}
-
-// Load user's custom splits
-function loadCustomSplits() {
-    $.ajax({
-        url: '../handlers/fetchWorkoutSplits.php?type=custom',
-        method: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            if (response.success && response.splits.length > 0) {
-                renderSplits(response.splits, 'customSplitsContainer', 'custom');
+        error: function(xhr, status, error) {
+            console.error('loadSplitOverview error:', error);
+            console.error('Response text:', xhr.responseText);
+            handleOverviewError(error || 'Failed to load splits');
+        },
+        complete: function() {
+            if (typeof onComplete === 'function') {
+                onComplete();
             }
         }
     });
 }
 
-// Render splits cards
+function showLoadingState() {
+    const spinnerHTML = `
+        <div class="col-12 text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `;
+
+    $('#presetSplitsContainer').html(spinnerHTML);
+    $('#customSplitsContainer').html(spinnerHTML);
+}
+
+function escapeHtml(value) {
+    return $('<div>').text(value ?? '').html();
+}
+
+function handleOverviewError(message) {
+    const safeMessage = escapeHtml(message || 'Unable to load workout splits.');
+    $('#activeSplitSection').hide();
+    $('#presetSplitsContainer').html(`
+        <div class="col-12"><p class="text-danger">${safeMessage}</p></div>
+    `);
+    $('#customSplitsContainer').html(`
+        <div class="col-12"><p class="text-danger">${safeMessage}</p></div>
+    `);
+}
+
+function updateActiveSplit(activeSplit) {
+    activeSplitData = activeSplit || null;
+    if (activeSplitData) {
+        $('#activeSplitSection').show();
+        $('#activeSplitName').text(activeSplitData.split_name);
+        $('#activeSplitDescription').text(activeSplitData.description || 'No description');
+        currentSplitId = activeSplitData.id;
+    } else {
+        $('#activeSplitSection').hide();
+    }
+}
+
+function renderPresetSplits(splits) {
+    if (splits.length > 0) {
+        renderSplits(splits, 'presetSplitsContainer', 'preset');
+    } else {
+        $('#presetSplitsContainer').html(
+            '<div class="col-12"><p class="text-muted">No preset splits available.</p></div>'
+        );
+    }
+}
+
+function renderCustomSplits(splits) {
+    if (splits.length > 0) {
+        renderSplits(splits, 'customSplitsContainer', 'custom');
+    } else {
+        $('#customSplitsContainer').html(`
+            <div class="col-12">
+                <div class="card bg-dark border-secondary">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-folder2-open text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-3 mb-0">No custom splits yet. Create your first one!</p>
+                    </div>
+                </div>
+            </div>
+        `);
+    }
+}
+
 function renderSplits(splits, containerId, type) {
     let html = '';
     splits.forEach(split => {
@@ -294,26 +341,34 @@ function renderSplits(splits, containerId, type) {
     $('#' + containerId).html(html);
 }
 
-// View split details
 function viewSplitDetails(splitId) {
     currentSplitId = splitId;
     const modal = new bootstrap.Modal(document.getElementById('splitDetailsModal'));
     
-    // Reset modal content
     $('#splitDetailsBody').html('<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>');
     modal.show();
     
-    // Load split details
     $.ajax({
         url: '../handlers/getSplitDetails.php?id=' + splitId,
         method: 'GET',
         dataType: 'json',
         success: function(response) {
-            if (response.success) {
-                renderSplitDetails(response.split, response.days);
-            } else {
+            if (!response.success) {
                 $('#splitDetailsBody').html('<p class="text-danger">Error loading split details.</p>');
+                return;
             }
+
+            const payload = response.data || {};
+            const split = payload.split || response.split || null;
+            const days = payload.days || response.days || [];
+
+            if (!split) {
+                console.error('getSplitDetails response missing split payload:', response);
+                $('#splitDetailsBody').html('<p class="text-danger">Split data not available.</p>');
+                return;
+            }
+
+            renderSplitDetails(split, days);
         },
         error: function() {
             $('#splitDetailsBody').html('<p class="text-danger">Error loading split details.</p>');
@@ -321,7 +376,6 @@ function viewSplitDetails(splitId) {
     });
 }
 
-// Render split details
 function renderSplitDetails(split, days) {
     $('#splitDetailsTitle').text(split.split_name);
     
@@ -363,42 +417,66 @@ function renderSplitDetails(split, days) {
     $('#splitDetailsBody').html(html);
 }
 
-// Activate split
 function activateSplit() {
     if (!currentSplitId) return;
     
     console.log('Activating split:', currentSplitId);
-    
+
+    const $button = $('#activateSplitBtn');
+    const originalButtonHtml = $button.html();
+    let redirecting = false;
+
+    $button.prop('disabled', true).html(`
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Activating...
+    `);
+
     $.ajax({
         url: '../handlers/activateSplit.php',
         method: 'POST',
         data: { split_id: currentSplitId },
         dataType: 'json',
+        timeout: 45000,
         success: function(response) {
             console.log('Activate response:', response);
             if (response.success) {
-                bootstrap.Modal.getInstance(document.getElementById('splitDetailsModal')).hide();
-                location.reload();
-            } else {
-                alert('Error: ' + (response.message || 'Failed to activate split'));
+                redirecting = true;
+                const modalInstance = bootstrap.Modal.getInstance(document.getElementById('splitDetailsModal'));
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+
+                const responseData = response.data || {};
+                const activeSplitId = responseData.active_split_id ? parseInt(responseData.active_split_id, 10) : null;
+                const targetUrl = activeSplitId ? `myWorkouts.php?split_id=${activeSplitId}` : 'myWorkouts.php';
+
+                window.location.href = targetUrl;
+                return;
             }
+
+            alert('Error: ' + (response.message || 'Failed to activate split'));
         },
         error: function(xhr, status, error) {
             console.error('Activate error:', error);
             console.error('Response text:', xhr.responseText);
-            alert('Error activating split: ' + error + '\n\nCheck console for details.');
+            const responseJSON = xhr.responseJSON || {};
+            const message = responseJSON.message || error || 'Gateway Time-out';
+            alert('Error activating split: ' + message + '\n\nCheck console for details.');
+        },
+        complete: function() {
+            if (!redirecting) {
+                $button.prop('disabled', false).html(originalButtonHtml);
+            }
         }
     });
 }
 
-// Show create split modal
 function showCreateSplitModal() {
     const modal = new bootstrap.Modal(document.getElementById('createSplitModal'));
     $('#createSplitForm')[0].reset();
     modal.show();
 }
 
-// Create new split
 function createSplit() {
     const formData = $('#createSplitForm').serialize();
     
@@ -409,9 +487,19 @@ function createSplit() {
         dataType: 'json',
         success: function(response) {
             if (response.success) {
-                bootstrap.Modal.getInstance(document.getElementById('createSplitModal')).hide();
-                loadCustomSplits();
-                alert('Split created successfully!');
+                const modalInstance = bootstrap.Modal.getInstance(document.getElementById('createSplitModal'));
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+
+                const newSplitId = response.split_id ? parseInt(response.split_id, 10) : null;
+                loadSplitOverview(function() {
+                    if (newSplitId) {
+                        setTimeout(() => viewSplitDetails(newSplitId), 250);
+                    } else {
+                        alert('Split created successfully!');
+                    }
+                });
             } else {
                 alert('Error: ' + (response.message || 'Failed to create split'));
             }
@@ -419,14 +507,12 @@ function createSplit() {
     });
 }
 
-// View active split
 function viewActiveSplit() {
-    if (currentSplitId) {
-        viewSplitDetails(currentSplitId);
+    if (activeSplitData && activeSplitData.id) {
+        viewSplitDetails(activeSplitData.id);
     }
 }
 
-// Deactivate split
 function deactivateSplit() {
     if (!confirm('Are you sure you want to deactivate your current split?')) return;
     
@@ -436,7 +522,7 @@ function deactivateSplit() {
         dataType: 'json',
         success: function(response) {
             if (response.success) {
-                location.reload();
+                loadSplitOverview();
             } else {
                 alert('Error: ' + (response.message || 'Failed to deactivate split'));
             }

@@ -26,6 +26,7 @@ try {
 
     // Start transaction
     $db->beginTransaction();
+    $activatedSplitId = null;
 
     // Deactivate all current splits for this user
     $stmt = $db->prepare("
@@ -60,7 +61,8 @@ try {
             ':description' => $split['description'],
             ':timestamp' => $timestamp
         ]);
-        $newSplitId = $db->lastInsertId('workout_splits_id_seq');
+    $newSplitId = (int)$db->lastInsertId('workout_splits_id_seq');
+    $activatedSplitId = $newSplitId;
 
         // Copy split days
         $stmt = $db->prepare("SELECT * FROM split_days WHERE split_id = :split_id ORDER BY display_order");
@@ -116,13 +118,18 @@ try {
             ':id' => $splitId,
             ':user_id' => $userId
         ]);
+        $activatedSplitId = (int)$splitId;
     }
 
     $db->commit();
 
     echo json_encode([
         "success" => true,
-        "message" => "Split activated successfully"
+        "message" => "Split activated successfully",
+        "data" => [
+            "active_split_id" => $activatedSplitId ?: null,
+            "duplicated_from" => ($activatedSplitId && $activatedSplitId !== (int)$splitId) ? (int)$splitId : null
+        ]
     ]);
 
 } catch (PDOException $e) {
