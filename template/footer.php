@@ -15,19 +15,19 @@
                 <h5 class="fw-semibold mb-3 text-white">Quick Links</h5>
                 <ul class="list-unstyled footer-links">
                     <li><a href="../pages/home.php" class="text-decoration-none text-white">Home</a></li>
-                    <li><a href="../pages/tracking.php" class="text-decoration-none text-white">Tracking</a></li>
+                    <li><a href="../pages/about.php" class="text-decoration-none text-white">About</a></li>
+                    <li><a href="../pages/track.php" class="text-decoration-none text-white">Track</a></li>
                     <li><a href="../pages/shop.php" class="text-decoration-none text-white">Shop</a></li>
-                    <li><a href="../pages/contact.php" class="text-decoration-none text-white">Contact</a></li>
                 </ul>
             </div>
 
             <div class="col-lg-3 col-md-6">
                 <h5 class="fw-semibold mb-3 text-white">Features</h5>
                 <ul class="list-unstyled footer-links">
-                    <li><a href="#" class="text-decoration-none text-white">Member Management</a></li>
-                    <li><a href="#" class="text-decoration-none text-white">Progress Tracking</a></li>
-                    <li><a href="#" class="text-decoration-none text-white">Workout Analytics</a></li>
-                    <li><a href="#" class="text-decoration-none text-white">Nutrition Plans</a></li>
+                    <li><a href="../pages/nutrition.php" class="text-decoration-none text-white">Nutrition Tracking</a></li>
+                    <li><a href="../pages/myWorkouts.php" class="text-decoration-none text-white">My Workouts</a></li>
+                    <li><a href="../pages/workoutSplits.php" class="text-decoration-none text-white">Workout Splits</a></li>
+                    <li><a href="../pages/profile.php" class="text-decoration-none text-white">Profile</a></li>
                 </ul>
             </div>
 
@@ -35,8 +35,9 @@
                 <h5 class="fw-semibold mb-3 text-white">Contact</h5>
                 <ul class="list-unstyled text-white">
                     <li class="mb-2"><i class="bi bi-envelope"></i> info@gymly.com</li>
-                    <li><i class="bi bi-geo-alt"></i> Nairobi, Kenya</li>
+                    <li class="mb-2"><i class="bi bi-geo-alt"></i> Nairobi, Kenya</li>
                 </ul>
+                <p class="small text-white mt-3">Built by Strathmore University students</p>
             </div>
         </div>
 
