@@ -50,5 +50,35 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Global Cart Count Update -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update cart count from localStorage
+    function updateGlobalCartCount() {
+        const cart = JSON.parse(localStorage.getItem('gymlyCart')) || [];
+        const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const badge = document.getElementById('globalCartCount');
+        if (badge) {
+            badge.textContent = totalItems;
+            badge.style.display = totalItems > 0 ? 'inline-block' : 'none';
+        }
+    }
+    
+    // Update on page load
+    updateGlobalCartCount();
+    
+    // Listen for storage changes (when cart is updated in another tab/page)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'gymlyCart') {
+            updateGlobalCartCount();
+        }
+    });
+    
+    // Listen for custom cart update event
+    window.addEventListener('cartUpdated', updateGlobalCartCount);
+});
+</script>
+
 </body>
 </html>
