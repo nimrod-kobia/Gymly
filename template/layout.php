@@ -61,6 +61,12 @@ require_once "../classes/SessionManager.php";
                     <?php endif; ?>
 
                     <li class="nav-item"><a class="nav-link" href="../pages/shop.php">Shop</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="#" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+                            <i class="bi bi-cart3"></i> Cart
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="globalCartCount" style="font-size: 0.65rem;">0</span>
+                        </a>
+                    </li>
                     <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/contact.php">Contact</a></li>
                     

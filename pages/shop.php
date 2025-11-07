@@ -181,31 +181,41 @@ require_once "../template/layout.php";
             </div>
         </div>
 
-        <!-- Shopping Cart Sidebar -->
-        <div class="offcanvas offcanvas-end bg-dark text-white" tabindex="-1" id="cartOffcanvas">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title">Shopping Cart</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        <!-- Shopping Cart Offcanvas -->
+        <div class="offcanvas offcanvas-end bg-dark text-white" tabindex="-1" id="cartOffcanvas" aria-labelledby="cartOffcanvasLabel">
+            <div class="offcanvas-header border-bottom border-secondary">
+                <h5 class="offcanvas-title" id="cartOffcanvasLabel">
+                    <i class="bi bi-cart3"></i> Shopping Cart
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
-            <div class="offcanvas-body">
-                <div id="cartItems">
-                    <p class="text-muted">Your cart is empty</p>
-                </div>
-                <div class="mt-auto border-top pt-3">
-                    <div class="d-flex justify-content-between mb-3">
-                        <strong>Total: KSh <span id="cartTotal">0</span></strong>
+            <div class="offcanvas-body d-flex flex-column">
+                <div id="cartItemsList" class="flex-grow-1 overflow-auto">
+                    <!-- Cart items will be loaded here -->
+                    <div class="text-center py-5">
+                        <i class="bi bi-cart-x display-1 text-muted"></i>
+                        <p class="text-muted mt-3">Your cart is empty</p>
                     </div>
-                    <button class="btn btn-primary w-100" id="checkoutBtn">Proceed to Checkout</button>
+                </div>
+                
+                <!-- Cart Summary (sticky at bottom) -->
+                <div class="mt-auto border-top border-secondary pt-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <strong id="cartSubtotal">KSh 0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Items:</span>
+                        <strong id="cartItemCount">0</strong>
+                    </div>
+                    <button class="btn btn-primary w-100 mb-2" id="checkoutBtn" disabled>
+                        <i class="bi bi-credit-card"></i> Proceed to Checkout
+                    </button>
+                    <button class="btn btn-outline-light w-100" data-bs-dismiss="offcanvas">
+                        <i class="bi bi-arrow-left"></i> Continue Shopping
+                    </button>
                 </div>
             </div>
-        </div>
-
-        <!-- Cart Button -->
-        <div class="position-fixed bottom-0 end-0 m-4">
-            <button class="btn btn-primary rounded-circle p-3 shadow-lg" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
-                <i class="bi bi-cart3 fs-4"></i>
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
-            </button>
         </div>
     </div>
 </main>
@@ -213,13 +223,15 @@ require_once "../template/layout.php";
 <!-- JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    let cart = [];
-    const cartCount = document.getElementById('cartCount');
-    const cartItems = document.getElementById('cartItems');
-    const cartTotal = document.getElementById('cartTotal');
+    // Load cart from localStorage
+    let cart = JSON.parse(localStorage.getItem('gymlyCart')) || [];
+    
     const searchInput = document.getElementById('searchInput');
     const categoryFilter = document.getElementById('categoryFilter');
-    const productsGrid = document.getElementById('productsGrid');
+    const cartItemsList = document.getElementById('cartItemsList');
+    const cartSubtotal = document.getElementById('cartSubtotal');
+    const cartItemCount = document.getElementById('cartItemCount');
+    const checkoutBtn = document.getElementById('checkoutBtn');
 
     // Format currency for display
     function formatCurrency(amount) {
@@ -227,6 +239,62 @@ document.addEventListener('DOMContentLoaded', function() {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
         }).format(amount);
+    }
+
+    // Update cart display
+    function updateCartDisplay() {
+        const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        // Update summary
+        cartSubtotal.textContent = 'KSh ' + formatCurrency(subtotal);
+        cartItemCount.textContent = totalItems;
+        checkoutBtn.disabled = cart.length === 0;
+        
+        // Update cart items list
+        if (cart.length === 0) {
+            cartItemsList.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-cart-x display-1 text-muted"></i>
+                    <p class="text-muted mt-3">Your cart is empty</p>
+                    <p class="small text-muted">Add some products to get started!</p>
+                </div>
+            `;
+        } else {
+            cartItemsList.innerHTML = cart.map((item, index) => `
+                <div class="cart-item mb-3 p-3 border border-secondary rounded">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-1">${item.product}</h6>
+                        <button class="btn btn-sm btn-danger" onclick="removeItem(${index})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">KSh ${formatCurrency(item.price)} each</small>
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button class="btn btn-outline-light" onclick="updateQuantity(${index}, -1)">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <button class="btn btn-outline-light" disabled>${item.quantity}</button>
+                            <button class="btn btn-outline-light" onclick="updateQuantity(${index}, 1)">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-end mt-2">
+                        <strong class="text-primary">KSh ${formatCurrency(item.price * item.quantity)}</strong>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('gymlyCart', JSON.stringify(cart));
+        
+        // Trigger global cart update
+        window.dispatchEvent(new Event('cartUpdated'));
     }
 
     // Add to Cart functionality
@@ -249,40 +317,39 @@ document.addEventListener('DOMContentLoaded', function() {
             cart.push({ product, price, quantity: 1 });
         }
         
-        updateCart();
+        updateCartDisplay();
     }
 
-    function updateCart() {
-        // Update cart count
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartCount.textContent = totalItems;
-
-        // Update cart items display
-        if (cart.length === 0) {
-            cartItems.innerHTML = '<p class="text-muted">Your cart is empty</p>';
-        } else {
-            cartItems.innerHTML = cart.map(item => `
-                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
-                    <div>
-                        <h6 class="mb-0">${item.product}</h6>
-                        <small class="text-muted">KSh ${formatCurrency(item.price)} x ${item.quantity}</small>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <button class="btn btn-sm btn-outline-light" onclick="updateQuantity('${item.product}', -1)">-</button>
-                        <span>${item.quantity}</span>
-                        <button class="btn btn-sm btn-outline-light" onclick="updateQuantity('${item.product}', 1)">+</button>
-                        <button class="btn btn-sm btn-danger" onclick="removeFromCart('${item.product}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+    // Update quantity
+    window.updateQuantity = function(index, change) {
+        if (cart[index]) {
+            cart[index].quantity += change;
+            
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            
+            updateCartDisplay();
         }
+    };
 
-        // Update total
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        cartTotal.textContent = formatCurrency(total);
-    }
+    // Remove item
+    window.removeItem = function(index) {
+        const itemName = cart[index].product;
+        cart.splice(index, 1);
+        updateCartDisplay();
+        showToast(`${itemName} removed from cart`);
+    };
+
+    // Checkout button
+    checkoutBtn.addEventListener('click', function() {
+        if (cart.length === 0) {
+            showToast('Your cart is empty!', 'warning');
+            return;
+        }
+        // TODO: Redirect to checkout page or show payment modal
+        showToast('Checkout coming soon!', 'info');
+    });
 
     // Search and filter functionality
     function filterProducts() {
@@ -307,13 +374,15 @@ document.addEventListener('DOMContentLoaded', function() {
     categoryFilter.addEventListener('change', filterProducts);
 
     // Toast notification
-    function showToast(message) {
+    function showToast(message, type = 'success') {
+        const bgClass = type === 'success' ? 'bg-success' : type === 'warning' ? 'bg-warning text-dark' : 'bg-info';
         const toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3';
+        toast.className = `toast align-items-center text-white ${bgClass} border-0 position-fixed bottom-0 end-0 m-3`;
+        toast.style.zIndex = '9999';
         toast.innerHTML = `
             <div class="d-flex">
                 <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                <button type="button" class="btn-close ${type === 'warning' ? '' : 'btn-close-white'} me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         `;
         document.body.appendChild(toast);
@@ -322,33 +391,8 @@ document.addEventListener('DOMContentLoaded', function() {
         toast.addEventListener('hidden.bs.toast', () => toast.remove());
     }
 
-    // Global functions for cart operations
-    window.updateQuantity = function(product, change) {
-        const item = cart.find(item => item.product === product);
-        if (item) {
-            item.quantity += change;
-            if (item.quantity <= 0) {
-                removeFromCart(product);
-            } else {
-                updateCart();
-            }
-        }
-    };
-
-    window.removeFromCart = function(product) {
-        cart = cart.filter(item => item.product !== product);
-        updateCart();
-        showToast(`${product} removed from cart`);
-    };
-
-    // Checkout functionality
-    document.getElementById('checkoutBtn').addEventListener('click', function() {
-        if (cart.length === 0) {
-            showToast('Your cart is empty!', 'warning');
-            return;
-        }
-        showToast('Checkout functionality coming soon!', 'info');
-    });
+    // Initial cart display
+    updateCartDisplay();
 });
 </script>
 
