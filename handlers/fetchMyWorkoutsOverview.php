@@ -106,12 +106,17 @@ try {
                 $day['display_order'] = $day['display_order'] !== null ? (int)$day['display_order'] : null;
                 $day['is_rest_day'] = filter_var($day['is_rest_day'], FILTER_VALIDATE_BOOLEAN);
 
-                $exerciseStmt = $db->prepare("SELECT sde.*, e.name, e.muscle_group, e.equipment
+                $exerciseStmt = $db->prepare("SELECT sde.*, e.name, e.muscle_group, e.equipment,
+                    ec.completed AS is_completed
                     FROM split_day_exercises sde
                     INNER JOIN exercises e ON sde.exercise_id = e.id
+                    LEFT JOIN exercise_completions ec ON ec.exercise_id = sde.exercise_id 
+                        AND ec.split_day_id = sde.split_day_id 
+                        AND ec.user_id = :user_id 
+                        AND ec.completion_date = CURRENT_DATE
                     WHERE sde.split_day_id = :day_id
                     ORDER BY sde.display_order ASC");
-                $exerciseStmt->execute([':day_id' => $day['id']]);
+                $exerciseStmt->execute([':day_id' => $day['id'], ':user_id' => $userId]);
                 $exercises = $exerciseStmt->fetchAll(PDO::FETCH_ASSOC);
 
                 foreach ($exercises as &$exercise) {
@@ -121,6 +126,7 @@ try {
                     $exercise['target_sets'] = $exercise['target_sets'] !== null ? (int)$exercise['target_sets'] : null;
                     $exercise['target_reps'] = $exercise['target_reps'] !== null ? (int)$exercise['target_reps'] : null;
                     $exercise['target_rest_seconds'] = $exercise['target_rest_seconds'] !== null ? (int)$exercise['target_rest_seconds'] : null;
+                    $exercise['is_completed'] = filter_var($exercise['is_completed'], FILTER_VALIDATE_BOOLEAN);
                 }
                 unset($exercise);
 

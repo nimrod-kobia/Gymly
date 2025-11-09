@@ -12,6 +12,51 @@ if (!SessionManager::isLoggedIn()) {
 SessionManager::updateActivity();
 $userId = SessionManager::getUserId();
 
+// Fetch split data server-side for instant page load
+$db = (new Database())->connect();
+$splitData = [
+    'active_split' => null,
+    'preset_splits' => [],
+    'custom_splits' => []
+];
+
+if ($db) {
+    try {
+        // Fetch active split
+        $activeStmt = $db->prepare("SELECT * FROM workout_splits WHERE user_id = :user_id AND is_active = true LIMIT 1");
+        $activeStmt->execute([':user_id' => $userId]);
+        $activeSplit = $activeStmt->fetch(PDO::FETCH_ASSOC);
+        if ($activeSplit) {
+            $splitData['active_split'] = $activeSplit;
+        }
+
+        // Fetch preset splits
+        $presetStmt = $db->prepare("SELECT ws.*, COUNT(DISTINCT sd.id) as day_count, COUNT(DISTINCT sde.id) as exercise_count
+            FROM workout_splits ws
+            LEFT JOIN split_days sd ON ws.id = sd.split_id
+            LEFT JOIN split_day_exercises sde ON sd.id = sde.split_day_id
+            WHERE ws.split_type = 'preset' AND ws.user_id IS NULL
+            GROUP BY ws.id
+            ORDER BY ws.split_name ASC");
+        $presetStmt->execute();
+        $splitData['preset_splits'] = $presetStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Fetch custom splits
+        $customStmt = $db->prepare("SELECT ws.*, COUNT(DISTINCT sd.id) as day_count, COUNT(DISTINCT sde.id) as exercise_count
+            FROM workout_splits ws
+            LEFT JOIN split_days sd ON ws.id = sd.split_id
+            LEFT JOIN split_day_exercises sde ON sd.id = sde.split_day_id
+            WHERE ws.user_id = :user_id AND ws.split_type = 'custom'
+            GROUP BY ws.id
+            ORDER BY ws.updated_at DESC");
+        $customStmt->execute([':user_id' => $userId]);
+        $splitData['custom_splits'] = $customStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (PDOException $e) {
+        error_log('workoutSplits.php data fetch error: ' . $e->getMessage());
+    }
+}
+
 // Set page title for layout.php
 $pageTitle = "Workout Splits - Gymly";
 include '../template/layout.php';
@@ -184,22 +229,31 @@ include '../template/layout.php';
     </div>
 </div>
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <!-- Custom JavaScript -->
 <script>
+// Embed server-side data for instant page load (no AJAX delay!)
+const INITIAL_SPLIT_DATA = <?php echo json_encode($splitData, JSON_HEX_TAG | JSON_HEX_AMP); ?>;
+
 let currentSplitId = null;
 let activeSplitData = null;
 
 $(document).ready(function() {
-    loadSplitOverview();
+    loadInitialData();
 });
 
+function loadInitialData() {
+    // Load data instantly from embedded JSON (no AJAX needed!)
+    const activeSplit = INITIAL_SPLIT_DATA.active_split || null;
+    const presetSplits = INITIAL_SPLIT_DATA.preset_splits || [];
+    const customSplits = INITIAL_SPLIT_DATA.custom_splits || [];
+
+    updateActiveSplit(activeSplit);
+    renderPresetSplits(presetSplits);
+    renderCustomSplits(customSplits);
+}
+
 function loadSplitOverview(onComplete) {
+    // Fallback AJAX loader for refresh actions
     showLoadingState();
 
     $.ajax({
