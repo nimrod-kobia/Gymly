@@ -26,6 +26,9 @@ require_once "../classes/SessionManager.php";
     <!-- Global Dark Theme -->
     <link rel="stylesheet" href="../assets/css/dark-theme.css">
 
+    <!-- jQuery (loaded in head for all pages) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
 </head>
 
 <body>

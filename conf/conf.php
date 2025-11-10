@@ -19,10 +19,14 @@ define('DB_CHANNEL_BINDING', $_ENV['PGCHANNELBINDING'] ?? 'require');
 define('DB_CONN_TIMEOUT', (int)($_ENV['DB_CONN_TIMEOUT'] ?? 5));
 
 // Session configuration - SECURITY FOCUSED
+// Extract hostname without port for cookie domain
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$cookieDomain = preg_replace('/:\d+$/', '', $host); // Remove port number
+
 session_set_cookie_params([
     'lifetime' => 7200, // 2 hours
     'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'] ?? 'localhost',
+    'domain' => $cookieDomain,
     'secure' => isset($_SERVER['HTTPS']), // Only send over HTTPS
     'httponly' => true, // Prevent JavaScript access
     'samesite' => 'Strict' // CSRF protection

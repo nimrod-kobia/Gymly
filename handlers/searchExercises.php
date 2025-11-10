@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once "../autoload.php";
 
 header('Content-Type: application/json');
@@ -21,17 +24,23 @@ try {
         exit;
     }
 
-    $userId = (int) SessionManager::get('user_id');
+    $userId = (int) SessionManager::getUserId();
 
     $search = trim($_GET['q'] ?? '');
+    $muscleGroup = trim($_GET['muscle_group'] ?? '');
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 20;
     $limit = max(1, min($limit, 50));
 
     $query = "SELECT id, name, muscle_group, equipment FROM exercises WHERE (is_default = true OR created_by_user_id = :userId)";
     $params = [':userId' => $userId];
 
+    if ($muscleGroup !== '') {
+        $query .= " AND muscle_group = :muscle_group";
+        $params[':muscle_group'] = $muscleGroup;
+    }
+
     if ($search !== '') {
-        $query .= " AND (name ILIKE :search OR muscle_group ILIKE :search)";
+        $query .= " AND (name ILIKE :search)";
         $params[':search'] = '%' . $search . '%';
     }
 
@@ -51,10 +60,11 @@ try {
         'success' => true,
         'data' => $exercises
     ]);
-} catch (PDOException $e) {
-    error_log('searchExercises.php PDOException: ' . $e->getMessage());
+} catch (Exception $e) {
+    error_log('searchExercises.php Exception: ' . $e->getMessage());
+    error_log('Stack trace: ' . $e->getTraceAsString());
     echo json_encode([
         'success' => false,
-        'message' => 'Database error'
+        'message' => 'Server error: ' . $e->getMessage()
     ]);
 }
