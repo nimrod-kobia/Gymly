@@ -223,29 +223,38 @@ include '../template/layout.php';
             <h2 class="fw-bold text-gradient">Your Fitness Dashboard</h2>
             <p class="text-light">Everything you need to succeed — all in one place</p>
         </div>
-        <div class="row g-4">
-            <?php
-          
-            ?>
-            <div class="col-md-4">
-                <div class="feature-card bg-black p-4 rounded-4 border border-secondary">
-                    <i class="bi bi-graph-up text-primary fs-2 mb-3"></i>
-                    <h4 class="fw-semibold text-white">Progress Tracking</h4>
-                    <p class="text-light">Monitor your workouts and real-time stats.</p>
-                    <a href="<?php echo SessionManager::isLoggedIn() ? 'track.php' : 'signUpPage.php'; ?>" 
-                       class="btn btn-outline-light btn-sm">View Progress</a>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card bg-black p-4 rounded-4 border border-secondary h-100">
+                    <i class="bi bi-egg-fried text-primary fs-2 mb-3"></i>
+                    <h4 class="fw-semibold text-white">Nutrition Tracking</h4>
+                    <p class="text-light">Track your meals and monitor your daily calories with local Kenyan foods.</p>
+                    <a href="<?php echo SessionManager::isLoggedIn() ? 'nutrition.php' : 'signUpPage.php'; ?>" 
+                       class="btn btn-outline-light btn-sm">Track Nutrition</a>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="feature-card bg-black p-4 rounded-4 border border-secondary">
+            <?php if (SessionManager::isAdmin()): ?>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card bg-black p-4 rounded-4 border border-secondary h-100">
                     <i class="bi bi-people text-primary fs-2 mb-3"></i>
-                    <h4 class="fw-semibold text-white">Community</h4>
-                    <p class="text-light">See other users and stay motivated together.</p>
-                    <a href="users.php" class="btn btn-outline-light btn-sm">See Users</a>
+                    <h4 class="fw-semibold text-white">User Management</h4>
+                    <p class="text-light">Manage all users and monitor platform activity.</p>
+                    <a href="users.php" class="btn btn-outline-warning btn-sm">Manage Users</a>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="feature-card bg-black p-4 rounded-4 border border-secondary">
+            <?php else: ?>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card bg-black p-4 rounded-4 border border-secondary h-100">
+                    <i class="bi bi-calendar-week text-primary fs-2 mb-3"></i>
+                    <h4 class="fw-semibold text-white">Workout Splits</h4>
+                    <p class="text-light">Create custom workout routines and track your progress.</p>
+                    <a href="<?php echo SessionManager::isLoggedIn() ? 'workoutSplits.php' : 'signUpPage.php'; ?>" 
+                       class="btn btn-outline-light btn-sm">View Splits</a>
+                </div>
+            </div>
+            <?php endif; ?>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card bg-black p-4 rounded-4 border border-secondary h-100">
                     <i class="bi bi-shop text-primary fs-2 mb-3"></i>
                     <h4 class="fw-semibold text-white">Gym Store</h4>
                     <p class="text-light">Get premium fitness gear and supplements.</p>
