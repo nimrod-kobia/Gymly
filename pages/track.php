@@ -188,9 +188,6 @@ include '../template/layout.php';
                             </div>
                         </div>
                     </div>
-
-                    <!-- Overlay Gradient -->
-                    <div class="carousel-overlay"></div>
                 </div>
             </div>
         </div>
@@ -414,14 +411,6 @@ include '../template/layout.php';
     flex-shrink: 0;
 }
 
-.carousel-overlay {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, rgba(13,13,13,0.9) 0%, rgba(13,13,13,0.7) 30%, rgba(13,13,13,0) 100%);
-    pointer-events: none;
-}
-
 @keyframes scrollDown {
     0% { transform: translateY(0); }
     100% { transform: translateY(-50%); }
@@ -430,10 +419,5 @@ include '../template/layout.php';
 @keyframes scrollUp {
     0% { transform: translateY(-50%); }
     100% { transform: translateY(0); }
-}
-
-.dual-carousel-container:hover .carousel-track-down,
-.dual-carousel-container:hover .carousel-track-up {
-    animation-play-state: paused;
 }
 </style>

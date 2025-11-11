@@ -95,7 +95,7 @@ include '../template/layout.php';
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     $workoutsThisWeek = $result['count'] ?? 0;
                 } catch (PDOException $e) {
-                    // Table might not exist
+                
                 }
                 
                 // 2. Total Training Time (sum of completed workouts this month)
@@ -112,7 +112,7 @@ include '../template/layout.php';
                     $hours = round($result['total_hours'] ?? 0, 1);
                     $totalTrainingTime = $hours > 0 ? $hours . ' hrs' : '0 hrs';
                 } catch (PDOException $e) {
-                    // Table might not exist
+                    
                 }
                 
                 // 3. Nutrition Goal Completion (based on calorie target)
@@ -127,7 +127,7 @@ include '../template/layout.php';
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     $caloriesConsumed = $result['calories_consumed'] ?? 0;
                     
-                    // Assume daily goal of 2000 calories (can be made dynamic later)
+                    // Assuming daily goal of 2000 calories
                     $calorieGoal = 2000;
                     $completion = $calorieGoal > 0 ? min(100, round(($caloriesConsumed / $calorieGoal) * 100)) : 0;
                     $goalCompletion = $completion . '%';
@@ -221,7 +221,7 @@ include '../template/layout.php';
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="fw-bold text-gradient">Your Fitness Dashboard</h2>
-            <p class="text-light">Everything you need to succeed — all in one place</p>
+            <p class="text-light">Everything you need to succeed, all in one place</p>
         </div>
         <div class="row g-4 justify-content-center">
             <div class="col-lg-4 col-md-6">
