@@ -267,13 +267,13 @@ $healthHistory = $stmtHistory->fetchAll(PDO::FETCH_ASSOC);
         <!-- BMI Status Card -->
         <?php if ($latestMetrics && $latestMetrics['bmi']): ?>
         <div class="col-lg-6 mx-auto mb-4">
-            <div class="metric-card">
+            <div class="metric-card" id="bmiCard">
                 <h5 class="text-white mb-3"><i class="bi bi-speedometer2"></i> BMI Status</h5>
                 <div class="text-center mb-3">
-                    <div class="metric-value" style="font-size: 3rem;">
+                    <div class="metric-value" style="font-size: 3rem;" id="bmiDisplay">
                         <?= number_format($latestMetrics['bmi'], 1) ?>
                     </div>
-                    <div class="text-white">
+                    <div class="text-white" id="bmiCategory">
                         <?php
                         $bmi = $latestMetrics['bmi'];
                         if ($bmi < 18.5) {
@@ -289,7 +289,12 @@ $healthHistory = $stmtHistory->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
                 <div class="bmi-indicator">
-                    <div class="bmi-pointer" style="left: <?= min(100, max(0, ($bmi - 15) / 25 * 100)) ?>%;"></div>
+                    <div class="bmi-pointer" id="bmiPointer" style="left: <?php 
+                        // Proper BMI to percentage mapping for 15-40 scale
+                        $bmiClamped = min(40, max(15, $bmi));
+                        $percentage = (($bmiClamped - 15) / (40 - 15)) * 100;
+                        echo number_format($percentage, 2);
+                    ?>%;"></div>
                 </div>
                 <div class="d-flex justify-content-between text-muted small">
                     <span>15</span>
@@ -464,14 +469,45 @@ $healthHistory = $stmtHistory->fetchAll(PDO::FETCH_ASSOC);
     // Auto-calculate BMI on weight/height change
     const weightInput = document.querySelector('input[name="weight_kg"]');
     const heightInput = document.querySelector('input[name="height_cm"]');
+    const bmiDisplay = document.getElementById('bmiDisplay');
+    const bmiCategory = document.getElementById('bmiCategory');
+    const bmiPointer = document.getElementById('bmiPointer');
     
     function calculateBMI() {
         const weight = parseFloat(weightInput.value);
         const height = parseFloat(heightInput.value);
         
-        if (weight && height) {
+        if (weight && height && height > 0) {
             const heightM = height / 100;
-            const bmi = (weight / (heightM * heightM)).toFixed(1);
+            const bmi = parseFloat((weight / (heightM * heightM)).toFixed(1));
+            
+            // Update BMI display
+            if (bmiDisplay) {
+                bmiDisplay.textContent = bmi.toFixed(1);
+            }
+            
+            // Update category badge
+            if (bmiCategory) {
+                let categoryHTML = '';
+                if (bmi < 18.5) {
+                    categoryHTML = '<span class="badge bg-info">Underweight</span>';
+                } else if (bmi < 25) {
+                    categoryHTML = '<span class="badge bg-success">Normal</span>';
+                } else if (bmi < 30) {
+                    categoryHTML = '<span class="badge bg-warning">Overweight</span>';
+                } else {
+                    categoryHTML = '<span class="badge bg-danger">Obese</span>';
+                }
+                bmiCategory.innerHTML = categoryHTML;
+            }
+            
+            // Update pointer position (BMI scale from 15 to 40)
+            if (bmiPointer) {
+                const bmiClamped = Math.min(40, Math.max(15, bmi));
+                const percentage = ((bmiClamped - 15) / (40 - 15)) * 100;
+                bmiPointer.style.left = percentage.toFixed(2) + '%';
+            }
+            
             console.log('Calculated BMI:', bmi);
         }
     }
