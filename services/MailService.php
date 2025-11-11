@@ -32,5 +32,14 @@ class MailService {
         ";
         return $this->mailer->send();
     }
+    
+    public function sendMail(string $to, string $subject, string $htmlBody) {
+        $this->mailer->clearAddresses();
+        $this->mailer->addAddress($to);
+        $this->mailer->isHTML(true);
+        $this->mailer->Subject = $subject;
+        $this->mailer->Body = $htmlBody;
+        return $this->mailer->send();
+    }
 }
 ?>

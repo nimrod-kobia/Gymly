@@ -25,6 +25,7 @@
                 <h5 class="fw-semibold mb-3 text-white">Features</h5>
                 <ul class="list-unstyled footer-links">
                     <li><a href="../pages/nutrition.php" class="text-decoration-none text-white">Nutrition Tracking</a></li>
+                    <li><a href="../pages/trackHealth.php" class="text-decoration-none text-white">Health Tracking</a></li>
                     <li><a href="../pages/myWorkouts.php" class="text-decoration-none text-white">My Workouts</a></li>
                     <li><a href="../pages/workoutSplits.php" class="text-decoration-none text-white">Workout Splits</a></li>
                     <li><a href="../pages/profile.php" class="text-decoration-none text-white">Profile</a></li>

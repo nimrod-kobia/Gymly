@@ -227,10 +227,10 @@ include '../template/layout.php';
                 ],
                 [
                     'title' => 'Health Metrics',
-                    'icon' => 'body-text',
+                    'icon' => 'heart-pulse',
                     'color' => 'danger',
-                    'desc' => 'Calculate BMI, track weight changes, and monitor other health indicators over time.',
-                    'link' => 'profile.php'
+                    'desc' => 'Track weight, BMI, body fat, heart rate, sleep, and other vital health indicators.',
+                    'link' => 'trackHealth.php'
                 ]
             ];
             
