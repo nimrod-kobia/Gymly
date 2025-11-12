@@ -68,6 +68,11 @@ include '../template/layout.php';
         border-radius: 8px;
     }
     
+    .form-select option {
+        background: #1a1a1a;
+        color: white;
+    }
+    
     .form-control:focus, .form-select:focus {
         background: rgba(255, 255, 255, 0.15);
         border-color: #667eea;

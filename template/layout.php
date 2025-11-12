@@ -48,12 +48,6 @@ require_once "../classes/SessionManager.php";
                     <li class="nav-item"><a class="nav-link" href="../pages/home.php">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/track.php">Tracking</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/shop.php">Shop</a></li>
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" href="#" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
-                            <i class="bi bi-cart3"></i> Cart
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="globalCartCount" style="font-size: 0.65rem;">0</span>
-                        </a>
-                    </li>
                     <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/contact.php">Contact</a></li>
                     
@@ -71,6 +65,10 @@ require_once "../classes/SessionManager.php";
                         <span class="text-white small me-2">
                             Hi, <?php echo htmlspecialchars(SessionManager::getUsername()); ?>
                         </span>
+                        <a href="#" class="btn btn-outline-light btn-sm position-relative" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+                            <i class="bi bi-cart3"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="globalCartCount" style="font-size: 0.65rem;">0</span>
+                        </a>
                         <a href="../pages/profile.php" class="btn btn-outline-light btn-sm px-3">
                             <i class="bi bi-person"></i> Profile
                         </a>
@@ -78,6 +76,10 @@ require_once "../classes/SessionManager.php";
                             <i class="bi bi-box-arrow-right"></i> Logout
                         </a>
                     <?php else: ?>
+                        <a href="#" class="btn btn-outline-light btn-sm position-relative" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+                            <i class="bi bi-cart3"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="globalCartCount" style="font-size: 0.65rem;">0</span>
+                        </a>
                         <a href="../pages/signInPage.php" class="btn btn-outline-light btn-sm px-3">Sign In</a>
                         <a href="../pages/signUpPage.php" class="btn btn-primary btn-sm px-3">Sign Up</a>
                     <?php endif; ?>
