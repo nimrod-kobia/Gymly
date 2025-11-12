@@ -152,10 +152,10 @@ require_once "../template/layout.php";
                         <h5 class="card-title text-white">Insulated Water Bottle</h5>
                         <p class="card-text text-light flex-grow-1">1L capacity, keeps drinks cold for 24 hours</p>
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="h5 text-primary mb-0">KSh 1,200</span>
+                            <span class="h5 text-primary mb-0">KSh 1</span>
                             <span class="badge bg-success">In Stock</span>
                         </div>
-                        <button class="btn btn-primary mt-3 add-to-cart" data-product="Water Bottle" data-price="1200">
+                        <button class="btn btn-primary mt-3 add-to-cart" data-product="Water Bottle" data-price="1">
                             <i class="bi bi-cart-plus"></i> Add to Cart
                         </button>
                     </div>
