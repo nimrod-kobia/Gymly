@@ -130,11 +130,10 @@ $healthHistory = $stmtHistory->fetchAll(PDO::FETCH_ASSOC);
     .bmi-indicator {
         height: 10px;
         background: linear-gradient(to right, 
-            #3b82f6 0%, #3b82f6 18.5%,
-            #22c55e 18.5%, #22c55e 25%,
-            #eab308 25%, #eab308 30%,
-            #f59e0b 30%, #f59e0b 35%,
-            #ef4444 35%, #ef4444 100%
+            #3b82f6 0%, #3b82f6 14%,        /* Underweight: 15-18.5 */
+            #22c55e 14%, #22c55e 40%,       /* Normal: 18.5-25 */
+            #eab308 40%, #eab308 60%,       /* Overweight: 25-30 */
+            #ef4444 60%, #ef4444 100%       /* Obese: 30-40 */
         );
         border-radius: 5px;
         position: relative;
