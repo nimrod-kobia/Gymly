@@ -1,6 +1,10 @@
 <?php
 require_once "../autoload.php";
 
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 // Require admin access
 SessionManager::requireAdmin();
 
@@ -12,106 +16,147 @@ if (!$viewUserId) {
     exit();
 }
 
-$pdo = (new Database())->connect();
+try {
+    $pdo = (new Database())->connect();
+    if (!$pdo) {
+        throw new Exception("Database connection failed");
+    }
+} catch (Exception $e) {
+    die("Database Error: " . $e->getMessage());
+}
 
 // Fetch user details
-$stmt = $pdo->prepare("SELECT id, full_name, username, email, role, is_verified, created_at, updated_at FROM users WHERE id = ? LIMIT 1");
-$stmt->execute([$viewUserId]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+try {
+    $stmt = $pdo->prepare("SELECT id, full_name, username, email, role, is_verified, created_at, updated_at FROM users WHERE id = ? LIMIT 1");
+    $stmt->execute([$viewUserId]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user) {
-    header("Location: users.php?error=User+not+found");
-    exit();
+    if (!$user) {
+        header("Location: users.php?error=User+not+found");
+        exit();
+    }
+} catch (PDOException $e) {
+    die("Query Error (user details): " . $e->getMessage());
 }
 
 // Fetch latest health metrics
-$stmtHealth = $pdo->prepare("
-    SELECT * FROM user_health_metrics 
-    WHERE user_id = ? 
-    ORDER BY recorded_at DESC 
-    LIMIT 1
-");
-$stmtHealth->execute([$viewUserId]);
-$latestHealth = $stmtHealth->fetch(PDO::FETCH_ASSOC);
+try {
+    $stmtHealth = $pdo->prepare("
+        SELECT * FROM user_health_metrics 
+        WHERE user_id = ? 
+        ORDER BY recorded_at DESC 
+        LIMIT 1
+    ");
+    $stmtHealth->execute([$viewUserId]);
+    $latestHealth = $stmtHealth->fetch(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $latestHealth = null;
+    error_log("Error fetching health metrics: " . $e->getMessage());
+}
 
 // Fetch health history (last 30 days)
-$stmtHealthHistory = $pdo->prepare("
-    SELECT 
-        DATE(recorded_at) as date,
-        weight_kg,
-        bmi,
-        water_intake_ml,
-        hours_slept,
-        steps_count
-    FROM user_health_metrics 
-    WHERE user_id = ? 
-    AND recorded_at >= NOW() - INTERVAL '30 days'
-    ORDER BY recorded_at DESC
-    LIMIT 10
-");
-$stmtHealthHistory->execute([$viewUserId]);
-$healthHistory = $stmtHealthHistory->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $stmtHealthHistory = $pdo->prepare("
+        SELECT 
+            DATE(recorded_at) as date,
+            weight_kg,
+            bmi,
+            water_intake_ml,
+            hours_slept,
+            steps_count
+        FROM user_health_metrics 
+        WHERE user_id = ? 
+        AND recorded_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+        ORDER BY recorded_at DESC
+        LIMIT 10
+    ");
+    $stmtHealthHistory->execute([$viewUserId]);
+    $healthHistory = $stmtHealthHistory->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $healthHistory = [];
+    error_log("Error fetching health history: " . $e->getMessage());
+}
 
 // Fetch active workout split
-$stmtActiveSplit = $pdo->prepare("
-    SELECT ws.*, 
-           (SELECT COUNT(*) FROM split_days WHERE workout_split_id = ws.id) as total_days
-    FROM workout_splits ws
-    WHERE ws.user_id = ? AND ws.is_active = TRUE
-    LIMIT 1
-");
-$stmtActiveSplit->execute([$viewUserId]);
-$activeSplit = $stmtActiveSplit->fetch(PDO::FETCH_ASSOC);
+try {
+    $stmtActiveSplit = $pdo->prepare("
+        SELECT ws.*, 
+               (SELECT COUNT(*) FROM split_days WHERE workout_split_id = ws.id) as total_days
+        FROM workout_splits ws
+        WHERE ws.user_id = ? AND ws.is_active = TRUE
+        LIMIT 1
+    ");
+    $stmtActiveSplit->execute([$viewUserId]);
+    $activeSplit = $stmtActiveSplit->fetch(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $activeSplit = null;
+    error_log("Error fetching active split: " . $e->getMessage());
+}
 
 // Fetch all workout splits
-$stmtAllSplits = $pdo->prepare("
-    SELECT ws.*, 
-           (SELECT COUNT(*) FROM split_days WHERE workout_split_id = ws.id) as total_days
-    FROM workout_splits ws
-    WHERE ws.user_id = ?
-    ORDER BY ws.is_active DESC, ws.created_at DESC
-    LIMIT 5
-");
-$stmtAllSplits->execute([$viewUserId]);
-$allSplits = $stmtAllSplits->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $stmtAllSplits = $pdo->prepare("
+        SELECT ws.*, 
+               (SELECT COUNT(*) FROM split_days WHERE workout_split_id = ws.id) as total_days
+        FROM workout_splits ws
+        WHERE ws.user_id = ?
+        ORDER BY ws.is_active DESC, ws.created_at DESC
+        LIMIT 5
+    ");
+    $stmtAllSplits->execute([$viewUserId]);
+    $allSplits = $stmtAllSplits->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $allSplits = [];
+    error_log("Error fetching workout splits: " . $e->getMessage());
+}
 
 // Fetch recent workout completions
-$stmtWorkouts = $pdo->prepare("
-    SELECT 
-        e.name as exercise_name,
-        e.category,
-        sde.sets,
-        sde.reps,
-        sde.weight_kg,
-        sde.rest_seconds,
-        ec.completed_at,
-        ec.notes
-    FROM exercise_completions ec
-    JOIN split_day_exercises sde ON ec.split_day_exercise_id = sde.id
-    JOIN exercises e ON sde.exercise_id = e.id
-    WHERE ec.user_id = ?
-    ORDER BY ec.completed_at DESC
-    LIMIT 20
-");
-$stmtWorkouts->execute([$viewUserId]);
-$recentWorkouts = $stmtWorkouts->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $stmtWorkouts = $pdo->prepare("
+        SELECT 
+            e.name as exercise_name,
+            e.category,
+            sde.sets,
+            sde.reps,
+            sde.weight_kg,
+            sde.rest_seconds,
+            ec.completed_at,
+            ec.notes
+        FROM exercise_completions ec
+        LEFT JOIN split_day_exercises sde ON ec.split_day_exercise_id = sde.id
+        LEFT JOIN exercises e ON sde.exercise_id = e.id
+        WHERE ec.user_id = ?
+        ORDER BY ec.completed_at DESC
+        LIMIT 20
+    ");
+    $stmtWorkouts->execute([$viewUserId]);
+    $recentWorkouts = $stmtWorkouts->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $recentWorkouts = [];
+    error_log("Error fetching workout completions: " . $e->getMessage());
+}
 
 // Fetch nutrition summary (last 7 days)
-$stmtNutrition = $pdo->prepare("
-    SELECT 
-        summary_date,
-        calories_consumed,
-        protein_g,
-        carbs_g,
-        fat_g,
-        meals_count
-    FROM user_daily_summary
-    WHERE user_id = ?
-    ORDER BY summary_date DESC
-    LIMIT 7
-");
-$stmtNutrition->execute([$viewUserId]);
-$nutritionHistory = $stmtNutrition->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $stmtNutrition = $pdo->prepare("
+        SELECT 
+            summary_date,
+            calories_consumed,
+            protein_g,
+            carbs_g,
+            fat_g,
+            meals_count
+        FROM user_daily_summary
+        WHERE user_id = ?
+        ORDER BY summary_date DESC
+        LIMIT 7
+    ");
+    $stmtNutrition->execute([$viewUserId]);
+    $nutritionHistory = $stmtNutrition->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $nutritionHistory = [];
+    error_log("Error fetching nutrition summary: " . $e->getMessage());
+}
 
 $pageTitle = "User Details - " . htmlspecialchars($user['full_name']);
 include "../template/layout.php";
