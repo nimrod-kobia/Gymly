@@ -27,6 +27,7 @@ include "../template/layout.php";
                     <th>Created At</th>
                     <th>Updated At</th>
                     <th>Verified</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
         </table>
@@ -71,6 +72,15 @@ $(document).ready(function() {
                     return data
                         ? '<span class="text-success fw-semibold">Verified</span>'
                         : '<span class="text-danger fw-semibold">Not Verified</span>';
+                }
+            },
+            {
+                data: 'id',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    return '<a href="userDetails.php?id=' + data + '" class="btn btn-sm btn-primary">' +
+                           '<i class="bi bi-eye"></i> View Details</a>';
                 }
             }
         ],
