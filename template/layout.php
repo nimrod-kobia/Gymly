@@ -1,6 +1,8 @@
 <?php
 // layout.php — Global layout (dark theme + DataTables + Bootstrap)
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once "../classes/SessionManager.php";
 ?>
 <!DOCTYPE html>
