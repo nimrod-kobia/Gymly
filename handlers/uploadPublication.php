@@ -63,7 +63,7 @@ try {
         $companyId = null;
     }
 
-    $uploadDir = realpath(__DIR__ . '/../assets') . '/uploads/publications';
+    $uploadDir = rtrim(PUBLICATIONS_STORAGE_PATH, '/');
     if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
         throw new Exception('Failed to create upload directory');
     }
@@ -75,8 +75,6 @@ try {
     if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
         throw new Exception('Failed to move uploaded file');
     }
-
-    $publicPath = '../assets/uploads/publications/' . $fileName;
 
     $stmt = $db->prepare(
         'INSERT INTO publications (
@@ -90,13 +88,14 @@ try {
         )'
     );
 
+    // Keep only filename in DB; physical location is resolved server-side using PUBLICATIONS_STORAGE_PATH.
     $stmt->execute([
         ':publisher_user_id' => SessionManager::getUserId(),
         ':company_id' => $companyId,
         ':title' => $title,
         ':summary' => $summary ?: null,
         ':keywords' => $keywords ?: null,
-        ':file_path' => $publicPath,
+        ':file_path' => $fileName,
         ':original_file_name' => $file['name'],
         ':file_size_bytes' => (int)$file['size'],
         ':is_public' => $isPublic,

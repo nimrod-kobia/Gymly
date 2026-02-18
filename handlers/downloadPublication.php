@@ -26,10 +26,27 @@ try {
         exit;
     }
 
-    $relativePath = preg_replace('#^\.\./#', '', $publication['file_path']);
-    $absolutePath = realpath(__DIR__ . '/../' . $relativePath);
+    $storedPath = trim((string)($publication['file_path'] ?? ''));
+    $absolutePath = null;
 
-    if (!$absolutePath || !file_exists($absolutePath)) {
+    // New storage format: filename only, resolved in private storage path.
+    if ($storedPath !== '' && strpos($storedPath, '/') === false && strpos($storedPath, '..') === false) {
+        $candidate = rtrim(PUBLICATIONS_STORAGE_PATH, '/') . '/' . $storedPath;
+        if (is_file($candidate)) {
+            $absolutePath = realpath($candidate);
+        }
+    }
+
+    // Backward compatibility for older records that stored relative paths.
+    if (!$absolutePath && $storedPath !== '') {
+        $relativePath = preg_replace('#^\.\./#', '', $storedPath);
+        $legacyPath = realpath(__DIR__ . '/../' . $relativePath);
+        if ($legacyPath && is_file($legacyPath)) {
+            $absolutePath = $legacyPath;
+        }
+    }
+
+    if (!$absolutePath || !is_file($absolutePath)) {
         http_response_code(404);
         echo 'File not found';
         exit;
