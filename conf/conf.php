@@ -18,6 +18,9 @@ define('DB_SSL_MODE', $_ENV['PGSSLMODE'] ?? 'require');
 define('DB_CHANNEL_BINDING', $_ENV['PGCHANNELBINDING'] ?? 'require');
 define('DB_CONN_TIMEOUT', (int)($_ENV['DB_CONN_TIMEOUT'] ?? 5));
 
+// Private storage path for uploaded publications (outside public assets)
+define('PUBLICATIONS_STORAGE_PATH', $_ENV['PUBLICATIONS_STORAGE_PATH'] ?? (__DIR__ . '/../storage/publications'));
+
 // Session configuration - SECURITY FOCUSED
 // Extract hostname without port for cookie domain
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';

@@ -50,6 +50,7 @@ require_once "../classes/SessionManager.php";
                     <li class="nav-item"><a class="nav-link" href="../pages/home.php">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/track.php">Tracking</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/shop.php">Shop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/documents.php">Documents</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="../pages/contact.php">Contact</a></li>
                     
